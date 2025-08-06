@@ -59,10 +59,13 @@ start: new ExpantaNum(0),
                 var root = n(80)
                 if (hasUpgrade("p", 11)) root = n(100)
                 var am = player.b.am
-                am = am.div(getEffect(14))
+             am = am.div(getEffect(14))
                 am = powsoftcap(am, n(1e6), 0.5)
                 var decay = am.root(root)
 if(hasUpgrade("p", 24)&&player.b.m.lt(player.b.am))decay=decay.div(upgradeEffect("p", 24))
+if(hasUpgrade("p", 32)&&player.b.m.gte(player.b.am))decay=decay.mul(upgradeEffect("p", 32))
+if(inChallenge("p",12)&&player.b.m.gte(player.b.am))decay=decay.pow(0.5)
+if(inChallenge("p",12)&&player.b.m.lt(player.b.am))decay=decay.pow(2)
                 return ["div", decay]
             },
             gain() {
@@ -92,6 +95,7 @@ if(hasUpgrade("p", 24)&&player.b.m.lt(player.b.am))decay=decay.div(upgradeEffect
             passive() {
                 var gain = player.b.m.min(player.b.am).div(100000)
 if (hasUpgrade("p", 21)) gain = gain.pow(upgradeEffect("p", 21))
+if (hasUpgrade("p", 31))gain = gain.root(getEffect(21))
                 return ["add", gain]
             },
             effect() {
@@ -118,10 +122,14 @@ if (hasUpgrade("p", 21)) gain = gain.pow(upgradeEffect("p", 21))
                 var root = n(80)
                 if (hasUpgrade("p", 11)) root = n(100)
                 var m = player.b.m
+ m = m.div(getEffect(14))
+
                 m = powsoftcap(m, n(1e6), 0.5)
-                m = m.div(getEffect(14))
                 var decay = m.root(root)
 if(hasUpgrade("p", 24)&&player.b.am.lt(player.b.m))decay=decay.div(upgradeEffect("p", 24))
+if(hasUpgrade("p", 32)&&player.b.am.gte(player.b.m))decay=decay.mul(upgradeEffect("p", 32))
+if(inChallenge("p",12)&&player.b.m.gte(player.b.am))decay=decay.pow(2)
+if(inChallenge("p",12)&&player.b.m.lt(player.b.am))decay=decay.pow(0.5)
                 return ["div", decay]
             },
             gain() {
@@ -153,11 +161,13 @@ if(hasUpgrade("p", 24)&&player.b.am.lt(player.b.m))decay=decay.div(upgradeEffect
             passive() {
                 var gain = player.b.m.max(player.b.am).log10().pow(5).div(100000).add(1)
                 gain = gain.root(getEffect(21))
+
                 return ["mul", gain]
             },
             effect() {
-                var effect = player.b.s.root(2)
-                return effect
+                var eff = player.b.s.root(2)
+if(inChallenge("p",12))eff = eff.pow(0.5)
+                return eff
             },
             thing: "s",
             canClick: false,
@@ -325,6 +335,52 @@ challenges: {
             resource() { return player.b.points },
             unlocked() { return true},
         },
+12: {
+            name: '变数2 上位压制',
+            challengeDescription: '物质和反物质中较大者每秒衰减^0.5,较小者^2.空间效果^0.5 你基于变数中取得的最高平衡点获得加成.',
+            rewardDescription() { return `当前最高${format(this.rewardEffect())},升级24，32效果^${format(((this.rewardEffect() *0.075) + 1)**0.1)}` },
+            rewardEffect() {
+                var eff = n(player.p.challenges[12])
+
+                return eff
+            },
+    goal: 0,
+               
+            onExit() {
+                player.p.challenges[12] = player.b.points.max(challengeEffect("p", 12)).max(0)
+
+
+            },
+            completionLimit: "1eeeee10",
+            canComplete() { return true },
+            resource() { return player.b.points },
+            unlocked() { return hasUpgrade("p", 33)},
+        },
+    },
+buyables: {
+        11: {
+            cost(x = getBuyableAmount(this.layer, this.id)) {
+                var c = n(100).mul(n(2).pow(x))
+
+                return c
+            },
+title() {
+                return "1"
+            },
+            display() { return `升级13,14,23效果<br />^${format(buyableEffect(this.layer, this.id), 2)}.(下一级: ${format(this.effect(getBuyableAmount(this.layer, this.id).add(1)))})<br />费用:${format(this.cost(getBuyableAmount(this.layer, this.id)))}平衡点<br>等级:${formatWhole(getBuyableAmount(this.layer, this.id))}` },
+            canAfford() { return player.b.points.gte(this.cost()) },
+            buy() {
+                player.b.points = player.b.points.sub(this.cost())
+                setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
+            },
+        
+            effect(x = getBuyableAmount(this.layer, this.id)) {
+                var eff = n(1.1).pow(x)
+
+                return eff
+            },
+            unlocked() { return true  },
+        },
     },
     upgrades: {
         11: {
@@ -344,6 +400,7 @@ challenges: {
             cost() { return new ExpantaNum(1) },
             effect() {
                 var eff = player.p.points.add(2)
+eff=eff.pow(buyableEffect("p",11))
                 return eff
             },
             effectDisplay() { return `x ${format(this.effect())}` },
@@ -354,6 +411,7 @@ challenges: {
             description: "时间速率基于平衡点变化.",
 effect() {
                 var eff = player.b.points.add(10).log10().pow(0.5)
+eff=eff.pow(buyableEffect("p",11))
                 return eff
             },
             effectDisplay() { return player.b.points.gte(60)?`/ ${format(this.effect())}`:`x ${format(this.effect())}` },
@@ -371,6 +429,7 @@ effect() {
             description: "每个升级使能量获取^0.975.",
 effect() {
                 var eff = n(0.975).pow(player.p.upgrades.length)
+
                 return eff
             },
             effectDisplay() { return `^ ${format(this.effect())}` },
@@ -388,7 +447,9 @@ effect() {
             description: "时间速率基于物质和反物质的最大值减少（从1e10开始）.",
 effect() {
                 var eff = player.b.m.max(player.b.am).log10().log10().max(1)
+eff=eff.pow(buyableEffect("p",11))
                 return eff
+
             },
             effectDisplay() { return `/ ${format(this.effect())}` },
             cost() { return new ExpantaNum(5) },
@@ -399,6 +460,7 @@ effect() {
             description: "物质和反物质较大者给予较小者每秒衰减减少.",
 effect() {
                 var eff = player.b.m.max(player.b.am).log10().log10().add(1).pow(0.05)
+eff=eff.pow(challengeEffect("p", 12).mul(0.075).add(1).pow(0.1))
                 return eff
             },
             effectDisplay() { return `/ ${format(this.effect())}` },
@@ -407,9 +469,34 @@ effect() {
 
         },
 25: {
-            description: "解锁一个购买项（咕咕咕.",
+            description: "解锁一个购买项(下一个升级要买3次购买项1).",
             cost() { return new ExpantaNum(10) },
             unlocked() { return hasUpgrade("p", 24) },
+
+        },
+31: {
+            description: "来点有意思的 陨石对能量获取生效.",
+
+            cost() { return new ExpantaNum(15) },
+            unlocked() { return getBuyableAmount(this.layer,11).gte(3) },
+
+        },
+32: {
+            description: "来点更有意思的 物质和反物质较小者给予较大者每秒衰减增加.",
+effect() {
+                var eff = player.b.m.min(player.b.am).log10().log10().add(1).max(1).pow(0.05)
+eff=eff.pow(challengeEffect("p", 12).mul(0.075).add(1).pow(0.1))
+                return eff
+            },
+            effectDisplay() { return `x ${format(this.effect())}` },
+            cost() { return new ExpantaNum(20) },
+            unlocked() { return hasUpgrade("p", 31) },
+
+        },
+33: {
+            description: "解锁第二个变数.",
+            cost() { return new ExpantaNum(25) },
+            unlocked() { return hasUpgrade("p", 32) },
 
         },
     },
@@ -425,7 +512,18 @@ effect() {
 
                 ],
         },
+购买项: {
+            buttonStyle() { return { 'color': 'lightblue' } },
+unlocked() { return hasUpgrade("p", 25) },
+            content:
+                ["main-display",
 
+                    "prestige-button",
+                    "resource-display",
+                    "buyables",
+
+                ],
+        },
 
 
         变数: {
