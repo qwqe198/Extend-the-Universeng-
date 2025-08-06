@@ -287,7 +287,7 @@ s: new ExpantaNum(0),
         }
     },
 sgain() { // 资源获取指数加成(与exponent相乘)
-        var gain = player.b.points.div(500).pow(2).max(0)
+        var gain = player.b.points.div(500).pow(2).sub(1).max(0)
 
         return gain
     },
