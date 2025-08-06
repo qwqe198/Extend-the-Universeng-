@@ -1,7 +1,7 @@
-﻿let modInfo = {
-	name: "拓展宇宙",
-	id: "Extend-the-Universe",
-	author: "QwQe308",
+let modInfo = {
+	name: "拓展宇宙ng+",
+	id: "Extend-the-Universeng",
+	author: "QwQe308和22222",
 	pointsName: "",
 	discordName: "",
 	discordLink: "",
@@ -12,11 +12,13 @@
 
 // Set your version in num and name
 let VERSION = {
-	num: "0.1",
+	num: "0.11",
 	name: "",
 }
 
 let changelog = `<h1>更新记录:</h1><br>
+<h3>v0.11</h3><br>
+		- 添加前两个混沌点升级.<br>
 	<h3>v0.1</h3><br>
 		- 添加~60平衡点的内容.*难度在不断加高,警惕所有膨胀!<br>`
 

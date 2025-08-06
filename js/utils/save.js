@@ -1,9 +1,6 @@
-var toReset = false
 // ************ Save stuff ************
 function save() {
-	if(toReset) return
-	localStorage.setItem(modInfo.id, unescape(encodeURIComponent("eydXRvc2F2ZSI6dHJ1ZSwibXNEaXNwbGF5IjoiYWx3YXlzIiwidGhlbWUiOm51bGwsImhxVHJlZSI6ZmFsc2UsIm9mZmxpbmVQcm9kIjp0cnVlLCJoaWRlQ2hhbGxlbmdlcyI6ZmFsc2UsInNob3dTdG9yeSI6dHJ1ZSwiZm9yY2VPbmVUYWIiOmZhbHNlLCJvbGRTdHlsZSI6ZmFsc2V9"+LZString.compressToBase64(JSON.stringify(player)))));
-	localStorage.setItem(modInfo.id+"_options", unescape(encodeURIComponent(btoa(JSON.stringify(options)))));
+	localStorage.setItem(modInfo.id, btoa(unescape(encodeURIComponent(JSON.stringify(player)))));
   //ok it saved fine so the problem must be when loading
 }
 function startPlayerBase() {
@@ -11,14 +8,21 @@ function startPlayerBase() {
 		tab: layoutInfo.startTab,
 		navTab: (layoutInfo.showTree ? layoutInfo.startNavTab : "none"),
 		time: Date.now(),
+		autosave: true,
 		notify: {},
+		msDisplay: "always",
+		theme: null,
+		hqTree: false,
+		offlineProd: true,
 		versionType: modInfo.id,
 		version: VERSION.num,
 		beta: VERSION.beta,
 		timePlayed: 0,
 		keepGoing: false,
 		hasNaN: false,
-
+		hideChallenges: false,
+		showStory: true,
+		forceOneTab: false,
 		points: modInfo.initialStartPoints,
 		subtabs: {},
 		lastSafeTab: (readData(layoutInfo.showTree) ? "none" : layoutInfo.startTab)
@@ -189,69 +193,15 @@ function fixData(defaultData, newData) {
 }
 function load() {
 	let get = localStorage.getItem(modInfo.id);
-	if (get === null || get === undefined) {
+	if (get === null || get === undefined)
 		player = getStartPlayer();
-		options = getStartOptions();
-	}
-	else {
-		var a = LZString.decompressFromBase64(get.substr(214));
-		if(a==null){a=atob(get)}
-		else if(a[0]!="{"){a = atob(get)}
-		if(a==null){		
-			player = getStartPlayer();
-			options = getStartOptions();
-			if (player.offlineProd) {
-				if (player.offTime === undefined){
-					player.offTime = { remain: 0 }
-				};
-				player.offTime.remain += (Date.now() - player.time) / 1000;
-			}
-			player.time = Date.now();
-			versionCheck();
-			changeTheme();
-			changeTreeQuality();
-			updateLayers();
-			setupModInfo();
-		
-			setupTemp();
-			updateTemp();
-			updateTemp();
-			updateTabFormats();
-			loadVue();
-			return
-		}
-		if(a[0]!="{"){
-			player = getStartPlayer();
-			options = getStartOptions();
-			if (player.offlineProd) {
-				if (player.offTime === undefined){
-					player.offTime = { remain: 0 }
-				};
-				player.offTime.remain += (Date.now() - player.time) / 1000;
-			}
-			player.time = Date.now();
-			versionCheck();
-			changeTheme();
-			changeTreeQuality();
-			updateLayers();
-			setupModInfo();
-		
-			setupTemp();
-			updateTemp();
-			updateTemp();
-			updateTabFormats();
-			loadVue();
-			return
-		}
-		a = JSON.parse(a);
-		player = Object.assign(getStartPlayer(), a);
-		fixSave();
-		loadOptions();
-	}
+	else
+		player = Object.assign(getStartPlayer(), JSON.parse(atob(get)));
+	fixSave();
+
 	if (player.offlineProd) {
-		if (player.offTime === undefined){
-			player.offTime = { remain: 0 }
-		};
+		if (player.offTime === undefined)
+			player.offTime = { remain: 0 };
 		player.offTime.remain += (Date.now() - player.time) / 1000;
 	}
 	player.time = Date.now();
@@ -267,25 +217,41 @@ function load() {
 	updateTabFormats();
 	loadVue();
 }
-function loadOptions() {
-	let get2 = localStorage.getItem(modInfo.id+"_options");
-	if (get2) {
-		options = Object.assign(getStartOptions(), JSON.parse(decodeURIComponent(escape(atob(get2)))));
-	}
-	else {
-		options = getStartOptions()
-	}
-
-
-}
 function setupModInfo() {
 	modInfo.changelog = changelog;
 	modInfo.winText = winText ? winText : `Congratulations! You have reached the end and beaten this game, but for now...`;
 
 }
+function fixNaNs() {
+	NaNcheck(player);
+}
+function NaNcheck(data) {
+	for (item in data) {
+		if (data[item] == null) {
+		}
+		else if (Array.isArray(data[item])) {
+			NaNcheck(data[item]);
+		}
+		else if (data[item] !== data[item] || data[item] === decimalNaN) {
+			if (NaNalert === true || confirm("Invalid value found in player, named '" + item + "'. Please let the creator of this mod know! Would you like to try to auto-fix the save and keep going?")) {
+				NaNalert = true;
+				data[item] = (data[item] !== data[item] ? 0 : decimalZero);
+			}
+			else {
+				clearInterval(interval);
+				player.autosave = false;
+				NaNalert = true;
+			}
+		}
+		else if (data[item] instanceof ExpantaNum) { // Convert to ExpantaNum
+		}
+		else if ((!!data[item]) && (data[item].constructor === Object)) {
+			NaNcheck(data[item]);
+		}
+	}
+}
 function exportSave() {
-	let str = JSON.stringify(player);
-	str = "eydXRvc2F2ZSI6dHJ1ZSwibXNEaXNwbGF5IjoiYWx3YXlzIiwidGhlbWUiOm51bGwsImhxVHJlZSI6ZmFsc2UsIm9mZmxpbmVQcm9kIjp0cnVlLCJoaWRlQ2hhbGxlbmdlcyI6ZmFsc2UsInNob3dTdG9yeSI6dHJ1ZSwiZm9yY2VPbmVUYWIiOmZhbHNlLCJvbGRTdHlsZSI6ZmFsc2V9"+LZString.compressToBase64(str);
+	let str = btoa(JSON.stringify(player));
 
 	const el = document.createElement("textarea");
 	el.value = str;
@@ -296,15 +262,12 @@ function exportSave() {
 	document.body.removeChild(el);
 }
 function importSave(imported = undefined, forced = false) {
-	if (imported === undefined){
-		imported = prompt("Paste your save here")
-	};
+	if (imported === undefined)
+		imported = prompt("Paste your save here");
 	try {
-		var a = LZString.decompressFromBase64(imported.substr(214));
-		if(a[0] != "{"){a = atob(imported)};
-		a = JSON.parse(a);
-		tempPlr = Object.assign(getStartPlayer(), a);
-		if (tempPlr.versionType != modInfo.id && !forced && !confirm("This save appears to be for a different mod! Are you sure you want to import?")){return};
+		tempPlr = Object.assign(getStartPlayer(), JSON.parse(atob(imported)));
+		if (tempPlr.versionType != modInfo.id && !forced && !confirm("This save appears to be for a different mod! Are you sure you want to import?")) // Wrong save (use "Forced" to force it to accept.)
+			return;
 		player = tempPlr;
 		player.versionType = modInfo.id;
 		fixSave();
@@ -326,9 +289,8 @@ function versionCheck() {
 	if (setVersion) {
 		if (player.versionType == modInfo.id && VERSION.num > player.version) {
 			player.keepGoing = false;
-			if (fixOldSave){
-				fixOldSave(player.version)
-			};
+			if (fixOldSave)
+				fixOldSave(player.version);
 		}
 		player.versionType = getStartPlayer().versionType;
 		player.version = VERSION.num;
@@ -336,5 +298,10 @@ function versionCheck() {
 	}
 }
 var saveInterval = setInterval(function () {
-	if (options.autosave){save()};
-}, 500);
+	if (player === undefined)
+		return;
+	if (gameEnded && !player.keepGoing)
+		return;
+	if (player.autosave)
+		save();
+}, 5000);
