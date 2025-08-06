@@ -283,9 +283,20 @@ addLayer("p", { //这是代码中的节点代码 例如player.p可以调用该�
         return {
             unlocked: true, //是否开始就解锁
             points: new ExpantaNum(0),
+s: new ExpantaNum(0),
         }
     },
-     
+sgain() { // 资源获取指数加成(与exponent相乘)
+        var gain = player.b.points.div(500).pow(2).max(0)
+
+        return gain
+    },
+      update(diff) {
+
+                        if(hasUpgrade("p",35))player.p.s = player.p.s.add(layers.p.sgain().div(20))
+
+
+    },
     requires() { return new ExpantaNum("60") },
     color: "lime",
     resource: "混沌点", // 重置获得的资源名称
@@ -302,6 +313,7 @@ addLayer("p", { //这是代码中的节点代码 例如player.p可以调用该�
     baseResource: "平衡点",//基础资源名称
     gainMult() { // 资源获取数量倍率
         mult = new ExpantaNum(1)
+if(hasUpgrade("p",34))mult=mult.mul(upgradeEffect("p", 34))
 mult=mult.mul(challengeEffect("p", 11).mul(0.1).add(1).pow(0.25))
 if(inChallenge("p",11))mult=n(0)
         return mult
@@ -470,14 +482,14 @@ eff=eff.pow(challengeEffect("p", 12).mul(0.075).add(1).pow(0.1))
         },
 25: {
             description: "解锁一个购买项(下一个升级要买3次购买项1).",
-            cost() { return new ExpantaNum(10) },
+            cost() { return new ExpantaNum(7) },
             unlocked() { return hasUpgrade("p", 24) },
 
         },
 31: {
             description: "来点有意思的 陨石对能量获取生效.",
 
-            cost() { return new ExpantaNum(15) },
+            cost() { return new ExpantaNum(8) },
             unlocked() { return getBuyableAmount(this.layer,11).gte(3) },
 
         },
@@ -489,25 +501,48 @@ eff=eff.pow(challengeEffect("p", 12).mul(0.075).add(1).pow(0.1))
                 return eff
             },
             effectDisplay() { return `x ${format(this.effect())}` },
-            cost() { return new ExpantaNum(20) },
+            cost() { return new ExpantaNum(9) },
             unlocked() { return hasUpgrade("p", 31) },
 
         },
 33: {
             description: "解锁第二个变数.",
-            cost() { return new ExpantaNum(25) },
+            cost() { return new ExpantaNum(10) },
             unlocked() { return hasUpgrade("p", 32) },
+
+        },
+34: {
+            description: "混沌点获取基于时间速率增加.",
+effect() {
+                var eff = getTimeSpeed().pow(0.1)
+
+                return eff
+
+            },
+            effectDisplay() { return `x ${format(this.effect())}` },
+            cost() { return new ExpantaNum(11) },
+            unlocked() { return hasUpgrade("p", 33) },
+
+        },
+35: {
+            description: "解锁一个新资源.",
+
+            cost() { return new ExpantaNum(15) },
+            unlocked() { return hasUpgrade("p", 34) },
 
         },
     },
  tabFormat: {
-        升级: {
+        主要: {
             buttonStyle() { return { 'color': 'lightblue' } },
             content:
                 ["main-display",
 
                     "prestige-button",
                     "resource-display",
+["display-text", function () {
+ if(hasUpgrade("p",35))return `你有${format(player.p.s)}熵(+${format(layers.p.sgain())}/s),效果制作中（需要500平衡点）`
+                                }],
                     "upgrades",
 
                 ],
