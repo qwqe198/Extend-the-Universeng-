@@ -8,6 +8,7 @@ ts = ts.mul(getEffect(22))
     if (hasUpgrade("p", 12)) ts = ts.mul(1.1)
 if (hasUpgrade("p", 14)&&player.b.points.lt(60)) ts = ts.mul(upgradeEffect("p", 14))
 if (hasUpgrade("p", 14)&&player.b.points.gte(60)) ts = ts.div(upgradeEffect("p", 14))
+if (hasUpgrade("p", 14)) ts = ts.div(upgradeEffect("p", 14))
 if(inChallenge("p",11))ts=ts.mul(player.b.points.add(1).pow(0.5))
 if (hasUpgrade("p", 22)&&(player.b.m.max(player.b.am).gte(1e8))) ts = ts.div(1.25)
     return ts
@@ -61,6 +62,7 @@ start: new ExpantaNum(0),
                 am = am.div(getEffect(14))
                 am = powsoftcap(am, n(1e6), 0.5)
                 var decay = am.root(root)
+if(hasUpgrade("p", 24)&&player.b.m.lt(player.b.am))decay=decay.div(upgradeEffect("p", 24))
                 return ["div", decay]
             },
             gain() {
@@ -89,7 +91,7 @@ start: new ExpantaNum(0),
             },
             passive() {
                 var gain = player.b.m.min(player.b.am).div(100000)
-if (hasUpgrade("p", 21)) gain = gain.div(upgradeEffect("p", 21))
+if (hasUpgrade("p", 21)) gain = gain.pow(upgradeEffect("p", 21))
                 return ["add", gain]
             },
             effect() {
@@ -119,6 +121,7 @@ if (hasUpgrade("p", 21)) gain = gain.div(upgradeEffect("p", 21))
                 m = powsoftcap(m, n(1e6), 0.5)
                 m = m.div(getEffect(14))
                 var decay = m.root(root)
+if(hasUpgrade("p", 24)&&player.b.am.lt(player.b.m))decay=decay.div(upgradeEffect("p", 24))
                 return ["div", decay]
             },
             gain() {
@@ -169,7 +172,7 @@ if (hasUpgrade("p", 21)) gain = gain.div(upgradeEffect("p", 21))
             陨石:${format(player.b[this.thing])}
             陨石每秒/${format(layers.b.clickables[this.id].decay()[1])}
             空间产量开${format(this.effect())}次根
-            基于空间,物质
+            基于空间,物质/反物质的最小值
             `},
             onClick() {
                 player.b.producing = this.id
@@ -179,7 +182,7 @@ if (hasUpgrade("p", 21)) gain = gain.div(upgradeEffect("p", 21))
                 return ["div", decay]
             },
             gain() {
-                var gain = player.b.m.log10().mul(player.b.s.log10().pow(1.6)).div(10)
+                var gain = player.b.m.min(player.b.am).log10().mul(player.b.s.log10().pow(1.6)).div(10)
                 return ["add", gain]
             },
             effect() {
@@ -365,12 +368,12 @@ effect() {
 
         },
 21: {
-            description: "每个升级使能量获取/1.1.",
+            description: "每个升级使能量获取^0.975.",
 effect() {
-                var eff = n(1.1).pow(player.p.upgrades.length)
+                var eff = n(0.975).pow(player.p.upgrades.length)
                 return eff
             },
-            effectDisplay() { return `/ ${format(this.effect())}` },
+            effectDisplay() { return `^ ${format(this.effect())}` },
             cost() { return new ExpantaNum(3) },
             unlocked() { return hasUpgrade("p", 15) },
 
@@ -382,9 +385,31 @@ effect() {
 
         },
 23: {
-            description: "咕咕咕.",
+            description: "时间速率基于物质和反物质的最大值减少（从1e10开始）.",
+effect() {
+                var eff = player.b.m.max(player.b.am).log10().log10().max(1)
+                return eff
+            },
+            effectDisplay() { return `/ ${format(this.effect())}` },
             cost() { return new ExpantaNum(5) },
             unlocked() { return hasUpgrade("p", 22) },
+
+        },
+24: {
+            description: "物质和反物质较大者给予较小者每秒衰减减少.",
+effect() {
+                var eff = player.b.m.max(player.b.am).log10().log10().add(1).pow(0.05)
+                return eff
+            },
+            effectDisplay() { return `/ ${format(this.effect())}` },
+            cost() { return new ExpantaNum(6) },
+            unlocked() { return hasUpgrade("p", 23) },
+
+        },
+25: {
+            description: "解锁一个购买项（咕咕咕.",
+            cost() { return new ExpantaNum(10) },
+            unlocked() { return hasUpgrade("p", 24) },
 
         },
     },
