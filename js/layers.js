@@ -4,19 +4,23 @@ function getEffect(id) {
 function getTimeSpeed() {
     var ts = n(1)
     ts = ts.mul(getEffect(12))
+ts = ts.mul(getEffect(22))
     if (hasUpgrade("p", 12)) ts = ts.mul(1.1)
 if (hasUpgrade("p", 14)&&player.b.points.lt(60)) ts = ts.mul(upgradeEffect("p", 14))
 if (hasUpgrade("p", 14)&&player.b.points.gte(60)) ts = ts.div(upgradeEffect("p", 14))
+if(inChallenge("p",11))ts=ts.mul(player.b.points.add(1).pow(0.5))
+if (hasUpgrade("p", 22)&&(player.b.m.max(player.b.am).gte(1e8))) ts = ts.div(1.25)
     return ts
 }
-addLayer("b", { //这是代码中的节点代码 例如player.p可以调用该层级的数据 尽量使用顺手的字母什么的 不建议数字开头
-    symbol: "B", // 这是节点上显示的字母
-    position: 0, // 节点顺序
-    start() {
+ function start() {
         var s = new ExpantaNum(10000)
       if(hasUpgrade("p",13))s=s.mul(upgradeEffect("p", 13))
         return s
-    },
+    }
+addLayer("b", { //这是代码中的节点代码 例如player.p可以调用该层级的数据 尽量使用顺手的字母什么的 不建议数字开头
+    symbol: "B", // 这是节点上显示的字母
+    position: 0, // 节点顺序
+  
  
     startData() {
         return {
@@ -30,6 +34,7 @@ addLayer("b", { //这是代码中的节点代码 例如player.p可以调用该�
             s: new ExpantaNum(1),
             a: new ExpantaNum(0),
             t: new ExpantaNum(0),
+start: new ExpantaNum(0),
         }
     },
 
@@ -38,7 +43,7 @@ addLayer("b", { //这是代码中的节点代码 例如player.p可以调用该�
     type: "none", // normal: cost to gain currency depends on amount gained. static: cost depends on how much you already have
     row: 1, // Row the layer is in on the tree (0 is the first row)  QwQ:1也可以当第一排
     layerShown() { return true },
-    effectDescription() { return `宇宙开始扩张...请勿让任何物质小于1,否则会导致宇宙塌缩.<br>标注c的资源要点击才能生成，且只能同时生成一个<br>第一次到60平衡点会解锁新层级` },
+    effectDescription() { return `(基于物质/反物质的最小值)<br>宇宙开始扩张...请勿让正反物质小于1,否则会导致宇宙塌缩.<br>标注c的资源要点击才能生成，且只能同时生成一个<br>第一次到60平衡点会解锁新层级` },
     clickables: {
         11: {
             display() {
@@ -84,6 +89,7 @@ addLayer("b", { //这是代码中的节点代码 例如player.p可以调用该�
             },
             passive() {
                 var gain = player.b.m.min(player.b.am).div(100000)
+if (hasUpgrade("p", 21)) gain = gain.div(upgradeEffect("p", 21))
                 return ["add", gain]
             },
             effect() {
@@ -212,14 +218,21 @@ addLayer("b", { //这是代码中的节点代码 例如player.p可以调用该�
             }, */
         },
     },
+ 
     update(diff) {
-
+if (hasUpgrade("p", 13)&&player.b.start.lt(1)) {
+                        player.b.m = new ExpantaNum(start())
+player.b.am = new ExpantaNum(start())
+player.b.start=n(1)
+            }
         if ((player.b.m.lt(1) || player.b.am.lt(1))&&player.b.points.lt(60)) {
             layerDataReset(this.layer)
             player.points = n(0)
+
         }
  if ((player.b.m.lt(1) || player.b.am.lt(1))&&player.b.points.gte(60)) {
             doReset("p")
+
         }
         if (!player.b.producing) return
         diff = getTimeSpeed().mul(diff)
@@ -259,10 +272,7 @@ addLayer("p", { //这是代码中的节点代码 例如player.p可以调用该�
             points: new ExpantaNum(0),
         }
     },
-    onPrestige(resettingLayer) {
-        player.b.m = n(layers.b.start())
-player.b.am = n(layers.b.start())
-    },
+     
     requires() { return new ExpantaNum("60") },
     color: "lime",
     resource: "混沌点", // 重置获得的资源名称
@@ -279,7 +289,8 @@ player.b.am = n(layers.b.start())
     baseResource: "平衡点",//基础资源名称
     gainMult() { // 资源获取数量倍率
         mult = new ExpantaNum(1)
-
+mult=mult.mul(challengeEffect("p", 11).mul(0.1).add(1).pow(0.25))
+if(inChallenge("p",11))mult=n(0)
         return mult
     },
     gainExp() { // 资源获取指数加成(与exponent相乘)
@@ -289,6 +300,29 @@ player.b.am = n(layers.b.start())
     },
     layerShown() { return player.b.points.gte(60) || player.p.points.gte(1) || hasUpgrade("p", 11) },
     row: 2, // Row the layer is in on the tree (0 is the first row)  QwQ:1也可以当第一排
+challenges: {
+        11: {
+            name: '变数1 时间膨胀',
+            challengeDescription: '时间速率基于平衡点增加.你基于变数中取得的最高平衡点获得加成.',
+            rewardDescription() { return `当前最高${format(this.rewardEffect())},混沌点x${format(((this.rewardEffect() *0.1) + 1)**0.25)}` },
+            rewardEffect() {
+                var eff = n(player.p.challenges[11])
+
+                return eff
+            },
+    goal: 0,
+               
+            onExit() {
+                player.p.challenges[11] = player.b.points.max(challengeEffect("p", 11)).max(0)
+
+
+            },
+            completionLimit: "1eeeee10",
+            canComplete() { return true },
+            resource() { return player.b.points },
+            unlocked() { return true},
+        },
+    },
     upgrades: {
         11: {
             description: "削弱物质与反物质互相湮灭除数(开80次根->开100次根).",
@@ -306,7 +340,7 @@ player.b.am = n(layers.b.start())
             description: "在混沌点重置后，初始正反物质基于混沌点增加.",
             cost() { return new ExpantaNum(1) },
             effect() {
-                var eff = player.p.points.add(1)
+                var eff = player.p.points.add(2)
                 return eff
             },
             effectDisplay() { return `x ${format(this.effect())}` },
@@ -316,7 +350,7 @@ player.b.am = n(layers.b.start())
  14: {
             description: "时间速率基于平衡点变化.",
 effect() {
-                var eff = player.b.points.add(10).log10()
+                var eff = player.b.points.add(10).log10().pow(0.5)
                 return eff
             },
             effectDisplay() { return player.b.points.gte(60)?`/ ${format(this.effect())}`:`x ${format(this.effect())}` },
@@ -325,13 +359,66 @@ effect() {
 
         },
 15: {
-            description: "解锁变数（制作中）.",
-            cost() { return new ExpantaNum(1) },
+            description: "解锁变数.",
+            cost() { return new ExpantaNum(2) },
             unlocked() { return hasUpgrade("p", 14) },
 
         },
-    },
+21: {
+            description: "每个升级使能量获取/1.1.",
+effect() {
+                var eff = n(1.1).pow(player.p.upgrades.length)
+                return eff
+            },
+            effectDisplay() { return `/ ${format(this.effect())}` },
+            cost() { return new ExpantaNum(3) },
+            unlocked() { return hasUpgrade("p", 15) },
 
+        },
+22: {
+            description: "如果物质/反物质的最大值超过1e8，时间速率/1.25.",
+            cost() { return new ExpantaNum(4) },
+            unlocked() { return hasUpgrade("p", 21) },
+
+        },
+23: {
+            description: "咕咕咕.",
+            cost() { return new ExpantaNum(5) },
+            unlocked() { return hasUpgrade("p", 22) },
+
+        },
+    },
+ tabFormat: {
+        升级: {
+            buttonStyle() { return { 'color': 'lightblue' } },
+            content:
+                ["main-display",
+
+                    "prestige-button",
+                    "resource-display",
+                    "upgrades",
+
+                ],
+        },
+
+
+
+        变数: {
+            buttonStyle() { return { 'color': 'lightblue' } },
+            unlocked() { return hasUpgrade("p", 15) },
+            content:
+                ["main-display",
+
+                    "prestige-button",
+                    "resource-display",
+ ["display-text", function () {
+ return "在变数内无法获得混沌点"
+                                }],
+                    "challenges",
+
+                ],
+        },
+    },
 
 
 })

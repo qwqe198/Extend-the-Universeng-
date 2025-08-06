@@ -12,11 +12,13 @@ let modInfo = {
 
 // Set your version in num and name
 let VERSION = {
-	num: "0.12",
+	num: "0.13",
 	name: "",
 }
 
 let changelog = `<h1>更新记录:</h1><br>
+<h3>v0.13</h3><br>
+		- 添加三个混沌点升级和一个变数,优化描述.<br>
 <h3>v0.12</h3><br>
 		- 添加三个混沌点升级和教程.<br>
 <h3>v0.11</h3><br>
@@ -52,6 +54,7 @@ function addedPlayerData() { return {
 
 // Display extra things at the top of the page
 var displayThings = [
+function () { return `时间速率:${format(getTimeSpeed())}x` },
 ]
 
 // Determines when the game "ends"
