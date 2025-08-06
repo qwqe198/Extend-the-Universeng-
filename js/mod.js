@@ -12,11 +12,13 @@ let modInfo = {
 
 // Set your version in num and name
 let VERSION = {
-	num: "0.11",
+	num: "0.12",
 	name: "",
 }
 
 let changelog = `<h1>更新记录:</h1><br>
+<h3>v0.12</h3><br>
+		- 添加三个混沌点升级和教程.<br>
 <h3>v0.11</h3><br>
 		- 添加前两个混沌点升级.<br>
 	<h3>v0.1</h3><br>

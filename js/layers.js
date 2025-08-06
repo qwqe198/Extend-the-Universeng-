@@ -5,46 +5,44 @@ function getTimeSpeed() {
     var ts = n(1)
     ts = ts.mul(getEffect(12))
     if (hasUpgrade("p", 12)) ts = ts.mul(1.1)
+if (hasUpgrade("p", 14)&&player.b.points.lt(60)) ts = ts.mul(upgradeEffect("p", 14))
+if (hasUpgrade("p", 14)&&player.b.points.gte(60)) ts = ts.div(upgradeEffect("p", 14))
     return ts
 }
 addLayer("b", { //这是代码中的节点代码 例如player.p可以调用该层级的数据 尽量使用顺手的字母什么的 不建议数字开头
     symbol: "B", // 这是节点上显示的字母
     position: 0, // 节点顺序
-    mstart() {
-        var m = new ExpantaNum(10000)
-      
-        return m
+    start() {
+        var s = new ExpantaNum(10000)
+      if(hasUpgrade("p",13))s=s.mul(upgradeEffect("p", 13))
+        return s
     },
-    amstart() {
-        var am = new ExpantaNum(10000)
-        
-        return am
-    },
+ 
     startData() {
         return {
             unlocked: true, //是否开始就解锁
             points: new ExpantaNum(0),
             producing: null,
             //row 1
-            m: layers.b.mstart(),
+            m: new ExpantaNum(10000),
             e: new ExpantaNum(0),
-            am: layers.b.amstart(),
+            am: new ExpantaNum(10000),
             s: new ExpantaNum(1),
             a: new ExpantaNum(0),
             t: new ExpantaNum(0),
         }
     },
 
-    color: "lime",
+    color: "#4B4C83",
     resource: "平衡点", // 重置获得的资源名称
     type: "none", // normal: cost to gain currency depends on amount gained. static: cost depends on how much you already have
     row: 1, // Row the layer is in on the tree (0 is the first row)  QwQ:1也可以当第一排
     layerShown() { return true },
-    effectDescription() { return `宇宙开始扩张...请勿让任何物质小于1,否则会导致宇宙塌缩.` },
+    effectDescription() { return `宇宙开始扩张...请勿让任何物质小于1,否则会导致宇宙塌缩.<br>标注c的资源要点击才能生成，且只能同时生成一个<br>第一次到60平衡点会解锁新层级` },
     clickables: {
         11: {
             display() {
-                return `开始生成物质(^1.03/s)...
+                return `c开始生成物质(^1.03/s)...
             物质数:${format(player.b.m)}
             物质每秒/${format(layers.b.clickables[11].decay()[1])}
             `},
@@ -101,7 +99,7 @@ addLayer("b", { //这是代码中的节点代码 例如player.p可以调用该�
         },
         13: {
             display() {
-                return `开始生成反物质(^1.03/s)...
+                return `c开始生成反物质(^1.03/s)...
             反物质数:${format(player.b.am)}
             反物质每秒/${format(layers.b.clickables[13].decay()[1])}
             `},
@@ -161,7 +159,7 @@ addLayer("b", { //这是代码中的节点代码 例如player.p可以调用该�
         },
         21: {
             display() {
-                return `开始出现陨石(+${format(this.gain()[1])}/s)...
+                return `c开始出现陨石(+${format(this.gain()[1])}/s)...
             陨石:${format(player.b[this.thing])}
             陨石每秒/${format(layers.b.clickables[this.id].decay()[1])}
             空间产量开${format(this.effect())}次根
@@ -216,9 +214,12 @@ addLayer("b", { //这是代码中的节点代码 例如player.p可以调用该�
     },
     update(diff) {
 
-        if (player.b.m.lt(1) || player.b.am.lt(1)) {
+        if ((player.b.m.lt(1) || player.b.am.lt(1))&&player.b.points.lt(60)) {
             layerDataReset(this.layer)
             player.points = n(0)
+        }
+ if ((player.b.m.lt(1) || player.b.am.lt(1))&&player.b.points.gte(60)) {
+            doReset("p")
         }
         if (!player.b.producing) return
         diff = getTimeSpeed().mul(diff)
@@ -257,6 +258,10 @@ addLayer("p", { //这是代码中的节点代码 例如player.p可以调用该�
             unlocked: true, //是否开始就解锁
             points: new ExpantaNum(0),
         }
+    },
+    onPrestige(resettingLayer) {
+        player.b.m = n(layers.b.start())
+player.b.am = n(layers.b.start())
     },
     requires() { return new ExpantaNum("60") },
     color: "lime",
@@ -297,7 +302,34 @@ addLayer("p", { //这是代码中的节点代码 例如player.p可以调用该�
             unlocked() { return hasUpgrade("p", 11) },
 
         },
-       
+        13: {
+            description: "在混沌点重置后，初始正反物质基于混沌点增加.",
+            cost() { return new ExpantaNum(1) },
+            effect() {
+                var eff = player.p.points.add(1)
+                return eff
+            },
+            effectDisplay() { return `x ${format(this.effect())}` },
+            unlocked() { return hasUpgrade("p", 12) },
+
+        },
+ 14: {
+            description: "时间速率基于平衡点变化.",
+effect() {
+                var eff = player.b.points.add(10).log10()
+                return eff
+            },
+            effectDisplay() { return player.b.points.gte(60)?`/ ${format(this.effect())}`:`x ${format(this.effect())}` },
+            cost() { return new ExpantaNum(1) },
+            unlocked() { return hasUpgrade("p", 13) },
+
+        },
+15: {
+            description: "解锁变数（制作中）.",
+            cost() { return new ExpantaNum(1) },
+            unlocked() { return hasUpgrade("p", 14) },
+
+        },
     },
 
 
