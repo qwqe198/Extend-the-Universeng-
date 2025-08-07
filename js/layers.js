@@ -44,7 +44,7 @@ start: new ExpantaNum(0),
     type: "none", // normal: cost to gain currency depends on amount gained. static: cost depends on how much you already have
     row: 1, // Row the layer is in on the tree (0 is the first row)  QwQ:1也可以当第一排
     layerShown() { return true },
-    effectDescription() { return `(基于物质/反物质的最小值)<br>宇宙开始扩张...请勿让正反物质小于1,否则会导致宇宙塌缩.<br>标注c的资源要点击才能生成，且只能同时生成一个<br>第一次到60平衡点会解锁新层级` },
+    effectDescription() { return `(基于物质/反物质的最小值)<br>宇宙开始扩张...请勿让正反物质小于1,否则会导致宇宙塌缩.<br>标注c的资源要点击才能生成，且只能同时生成一个<br>第一次到60平衡点会解锁新层级<br>如果在低于60平衡点坍缩，则固定+0.25混沌点` },
     clickables: {
         11: {
             display() {
@@ -241,7 +241,7 @@ player.b.start=n(1)
         if ((player.b.m.lt(1) || player.b.am.lt(1))&&player.b.points.lt(60)) {
             layerDataReset(this.layer)
             player.points = n(0)
-
+player.p.points = player.p.points.add(0.25)
         }
  if ((player.b.m.lt(1) || player.b.am.lt(1))&&player.b.points.gte(60)) {
             doReset("p")
