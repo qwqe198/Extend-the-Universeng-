@@ -316,6 +316,7 @@ sgain() { // 资源获取指数加成(与exponent相乘)
 if(hasUpgrade("p",34))mult=mult.mul(upgradeEffect("p", 34))
 mult=mult.mul(challengeEffect("p", 11).mul(0.1).add(1).pow(0.25))
 if(inChallenge("p",11))mult=n(0)
+if(inChallenge("p",12))mult=n(0)
         return mult
     },
     gainExp() { // 资源获取指数加成(与exponent相乘)
