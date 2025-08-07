@@ -534,7 +534,7 @@ effect() {
         },
     },
  tabFormat: {
-        主要: {
+        upg: {
             buttonStyle() { return { 'color': 'lightblue' } },
             content:
                 ["main-display",
@@ -548,7 +548,7 @@ effect() {
 
                 ],
         },
-购买项: {
+buy: {
             buttonStyle() { return { 'color': 'lightblue' } },
 unlocked() { return hasUpgrade("p", 25) },
             content:
@@ -562,7 +562,7 @@ unlocked() { return hasUpgrade("p", 25) },
         },
 
 
-        变数: {
+        chl: {
             buttonStyle() { return { 'color': 'lightblue' } },
             unlocked() { return hasUpgrade("p", 15) },
             content:
