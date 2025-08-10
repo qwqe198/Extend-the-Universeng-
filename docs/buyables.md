@@ -2,11 +2,12 @@
 
 Buyables are usually things that can be bought multiple times with scaling costs. They come with optional buttons that can be used for respeccing or selling buyables, among other things.
 
-The amount of a buyable owned is a `ExpantaNum`. 
+The amount of a buyable owned is a `OmegaNum`. 
 
 Useful functions for dealing with buyables and implementing their effects:
 
 - getBuyableAmount(layer, id): get the amount of the buyable the player has
+- addBuyables(layer, id, amount): add to the amount of the buyable
 - setBuyableAmount(layer, id, amount): set the amount of the buyable the player has
 - buyableEffect(layer, id): Returns the current effects of the buyable, if any.
 
@@ -15,7 +16,7 @@ Buyables should be formatted like this:
 ```js
 buyables: {
     11: {
-        cost(x) { return new ExpantaNum(1).mul(x) },
+        cost(x) { return new OmegaNum(1).mul(x) },
         display() { return "Blah" },
         canAfford() { return player[this.layer].points.gte(this.cost()) },
         buy() {
@@ -32,7 +33,7 @@ Features:
 
 - title: **optional**. displayed at the top in a larger font. It can also be a function that returns updating text.
 
-- cost(): cost for buying the next buyable. Can have an optional argument "x" to calculate the cost of the x+1th purchase. (x is a `ExpantaNum`).
+- cost(): cost for buying the next buyable. Can have an optional argument "x" to calculate the cost of the x+1th purchase. (x is a `OmegaNum`).
     Can return an object if there are multiple currencies.
                     
 - effect(): **optional**. A function that calculates and returns the current values of bonuses of this buyable.  Can have an optional argument "x" to calculate the effect of having x of the buyable.. 

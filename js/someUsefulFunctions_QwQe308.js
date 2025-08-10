@@ -1,5 +1,15 @@
 //快捷调用+提高运算速度
-
+var zero = new OmegaNum(0)
+var one = new OmegaNum(1)
+var two = new OmegaNum(2)
+var three = new OmegaNum(3)
+var four = new OmegaNum(4)
+var five = new OmegaNum(5)
+var six = new OmegaNum(6)
+var seven = new OmegaNum(7)
+var eight = new OmegaNum(8)
+var nine = new OmegaNum(9)
+var ten = new OmegaNum(10)
 //快捷定义
 function n(num){
     return new ExpantaNum(num)
@@ -19,7 +29,7 @@ function logsoftcap(num,start,power){
 //指数软上限
 function powsoftcap(num,start,power){
 	if(num.gt(start)){
-		num = num.root(power).mul(start.pow(n(1).sub(n(1).div(power))))
+		num = num.root(power).mul(start.pow(one.sub(one.div(power))))
 	}
     return num
 }
@@ -45,7 +55,7 @@ function expPow(num,pow){
 function expRootSoftcap(num,start,power){
     if(num.lte(start)) return num;
     num = num.log10();start = start.log10()
-    return ten.pow(num.root(power).mul(start.pow(n(1).sub(n(1).div(power)))))
+    return ten.pow(num.root(power).mul(start.pow(one.sub(one.div(power)))))
 }
 //修改class属性
 function setClass(id,toClass = []){

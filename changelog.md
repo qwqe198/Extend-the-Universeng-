@@ -1,7 +1,4 @@
 # The OmegaNum Tree changelog:
-# v1.2 - 5/29/21
-- Added the expantanum version back.
-
 # v1.1 - 5/28/21
 - Switched to OmegaNum
 - Formatting improvements

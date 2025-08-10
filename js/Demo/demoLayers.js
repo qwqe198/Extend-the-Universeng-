@@ -8,16 +8,17 @@ addLayer("c", {
         position: 0, // Horizontal position within a row. By default it uses the layer id and sorts in alphabetical order
         startData() { return {
             unlocked: true,
-			points: new ExpantaNum(0),
-            best: new ExpantaNum(0),
-            total: new ExpantaNum(0),
+			points: new OmegaNum(0),
+            best: new OmegaNum(0),
+            total: new OmegaNum(0),
             buyables: {}, // You don't actually have to initialize this one
             beep: false,
             thingy: "pointy",
             otherThingy: 10,
+            drop: "drip",
         }},
         color: "#4BDC13",
-        requires: new ExpantaNum(10), // Can be a function that takes requirement increases into account
+        requires: new OmegaNum(10), // Can be a function that takes requirement increases into account
         resource: "lollipops", // Name of prestige currency
         baseResource: "points", // Name of resource prestige is based on
         baseAmount() {return player.points}, // Get the current amount of baseResource
@@ -27,22 +28,22 @@ addLayer("c", {
         roundUpCost: false, // True if the cost needs to be rounded up (use when baseResource is static?)
 
         // For normal layers, gain beyond [softcap] points is put to the [softcapPower]th power
-        softcap: new ExpantaNum(1e100), 
-        softcapPower: new ExpantaNum(0.5), 
+        softcap: new OmegaNum(1e100), 
+        softcapPower: new OmegaNum(0.5), 
         canBuyMax() {}, // Only needed for static layers with buy max
         gainMult() { // Calculate the multiplier for main currency from bonuses
-            mult = new ExpantaNum(1)
+            mult = new OmegaNum(1)
             if (hasUpgrade(this.layer, 166)) mult = mult.times(2) // These upgrades don't exist
 			if (hasUpgrade(this.layer, 120)) mult = mult.times(upgradeEffect(this.layer, 120))
             return mult
         },
         gainExp() { // Calculate the exponent on main currency from bonuses
-            return new ExpantaNum(1)
+            return new OmegaNum(1)
         },
         row: 0, // Row the layer is in on the tree (0 is the first row)
         effect() {
             return { // Formulas for any boosts inherent to resources in the layer. Can return a single value instead of an object if there is just one effect
-            waffleBoost: (true == false ? 0 : ExpantaNum.pow(player[this.layer].points, 0.2)),
+            waffleBoost: (true == false ? 0 : OmegaNum.pow(player[this.layer].points, 0.2)),
             icecreamCap: (player[this.layer].points * 10)
         }},
         effectDescription() { // Optional text to describe the effects
@@ -106,12 +107,13 @@ addLayer("c", {
             11: {
                 title: "Generator of Genericness",
                 description: "Gain 1 Point every second.",
-                cost: new ExpantaNum(1),
+                cost: new OmegaNum(1),
                 unlocked() { return player[this.layer].unlocked }, // The upgrade is only visible when this is true
+                branches: [12]
             },
             12: {
                 description: "Point generation is faster based on your unspent Lollipops.",
-                cost: new ExpantaNum(1),
+                cost: new OmegaNum(1),
                 unlocked() { return (hasUpgrade(this.layer, 11))},
                 effect() { // Calculate bonuses from the upgrade. Can return a single value or an object with multiple values
                     let ret = player[this.layer].points.add(1).pow(player[this.layer].upgrades.includes(24)?1.1:(player[this.layer].upgrades.includes(14)?0.75:0.5)) 
@@ -146,7 +148,7 @@ addLayer("c", {
                 currencyDisplayName: "exhancers", // Use if using a nonstandard currency
                 currencyInternalName: 11, // Use if using a nonstandard currency
 
-                cost: new ExpantaNum(3),
+                cost: new OmegaNum(3),
                 unlocked() { return player[this.layer].unlocked }, // The upgrade is only visible when this is true
             },
         },
@@ -163,13 +165,13 @@ addLayer("c", {
                 title: "Exhancers", // Optional, displayed at the top in a larger font
                 cost(x) { // cost for buying xth buyable, can be an object if there are multiple currencies
                     if (x.gte(25)) x = x.pow(2).div(25)
-                    let cost = ExpantaNum.pow(2, x.pow(1.5))
+                    let cost = OmegaNum.pow(2, x.pow(1.5))
                     return cost.floor()
                 },
-                effect(x) { // Effects of owning x of the items, x is a ExpantaNum
+                effect(x) { // Effects of owning x of the items, x is a OmegaNum
                     let eff = {}
-                    if (x.gte(0)) eff.first = ExpantaNum.pow(25, x.pow(1.1))
-                    else eff.first = ExpantaNum.pow(1/25, x.times(-1).pow(1.1))
+                    if (x.gte(0)) eff.first = OmegaNum.pow(25, x.pow(1.1))
+                    else eff.first = OmegaNum.pow(1/25, x.times(-1).pow(1.1))
                 
                     if (x.gte(0)) eff.second = x.pow(0.8)
                     else eff.second = x.times(-1).pow(0.8).times(-1)
@@ -188,11 +190,11 @@ addLayer("c", {
                     cost = tmp[this.layer].buyables[this.id].cost
                     player[this.layer].points = player[this.layer].points.sub(cost)	
                     player[this.layer].buyables[this.id] = player[this.layer].buyables[this.id].add(1)
-                    player[this.layer].spentOnBuyables = player[this.layer].spentOnBuyables.add(cost) // This is a built-in system that you can use for respeccing but it only works with a single ExpantaNum value
+                    player[this.layer].spentOnBuyables = player[this.layer].spentOnBuyables.add(cost) // This is a built-in system that you can use for respeccing but it only works with a single OmegaNum value
                 },
                 buyMax() {}, // You'll have to handle this yourself if you want
                 style: {'height':'222px'},
-                purchaseLimit: new ExpantaNum(4),
+                purchaseLimit: new OmegaNum(4),
                 sellOne() {
                     let amount = getBuyableAmount(this.layer, this.id)
                     if (amount.lte(0)) return // Only sell one if there is at least one
@@ -221,7 +223,7 @@ addLayer("c", {
         microtabs: {
             stuff: {
                 first: {
-                    content: ["upgrades", ["display-text", function() {return "confirmed"}]]
+                    content: ["upgrades", ["display-text", function() {return "confirmed<br>" + player.c.drop}], ["drop-down", ["drop", ["drip", "drop"]]]]
                 },
                 second: {
                     embedLayer: "f",
@@ -290,7 +292,7 @@ addLayer("c", {
 
             },
         },
-
+        
         // Optional, lets you format the tab yourself by listing components. You can create your own components in v.js.
         tabFormat: {
             "main tab": {
@@ -304,7 +306,7 @@ addLayer("c", {
                     ["display-text", "Name your points!"],
                     ["text-input", "thingy"],
                     ["display-text",
-                        function() {return 'I have ' + format(player.points) + ' ' + player.c.thingy + ' points!'},
+                        function() {return 'I have ' + format(player.points) + ' ' + player[this.layer].thingy + ' points!'},
                         {"color": "red", "font-size": "32px", "font-family": "Comic Sans MS"}],
                     "h-line", "milestones", "blank", "upgrades", "challenges"],
                 glowColor: "blue",
@@ -315,7 +317,7 @@ addLayer("c", {
                 style() {return  {'background-color': '#222222'}},
                 buttonStyle() {return {'border-color': 'orange'}},
                 content:[ 
-                    ["buyables", ""], "blank",
+                    "buyables", "blank",
                     ["row", [
                         ["toggle", ["c", "beep"]], ["blank", ["30px", "10px"]], // Width, height
                         ["display-text", function() {return "Beep"}], "blank", ["v-line", "200px"],
@@ -328,6 +330,8 @@ addLayer("c", {
                     ["display-image", "discord.png"],],
             },
             jail: {
+                style() {return  {'background-color': '#222222'}},
+
                 content: [
                     ["infobox", "coolInfo"],
                     ["bar", "longBoi"], "blank",
@@ -350,7 +354,8 @@ addLayer("c", {
                     ["raw-html", function() {return "<h1> C O N F I R M E D </h1>"}], "blank",
                     ["microtabs", "stuff", {'width': '600px', 'height': '350px', 'background-color': 'brown', 'border-style': 'solid'}],
                     ["display-text", "Adjust how many points H gives you!"],
-                    ["slider", ["otherThingy", 1, 30]],
+                    ["slider", ["otherThingy", 1, 30]], "blank", ["upgrade-tree", [[11], 
+                    [12, 22, 22, 11]]]
                 ]
             }
 
@@ -395,12 +400,12 @@ addLayer("f", {
 
     startData() { return {
         unlocked: false,
-        points: new ExpantaNum(0),
+        points: new OmegaNum(0),
         boop: false,
         clickables: {[11]: "Start"}, // Optional default Clickable state
     }},
     color: "#FE0102",
-    requires() {return new ExpantaNum(10)}, 
+    requires() {return new OmegaNum(10)}, 
     resource: "farm points", 
     baseResource: "points", 
     baseAmount() {return player.points},
@@ -409,7 +414,7 @@ addLayer("f", {
     base: 3,
     roundUpCost: true,
     canBuyMax() {return false},
-    //directMult() {return new ExpantaNum(player.c.otherThingy)},
+    //directMult() {return new OmegaNum(player.c.otherThingy)},
 
     row: 1,
     layerShown() {return true}, 
@@ -504,7 +509,7 @@ addLayer("f", {
 addLayer("a", {
         startData() { return {
             unlocked: true,
-			points: new ExpantaNum(0),
+			points: new OmegaNum(0),
         }},
         color: "yellow",
         resource: "achievement power", 

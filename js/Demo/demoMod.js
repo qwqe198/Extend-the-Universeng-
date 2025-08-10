@@ -4,15 +4,15 @@ let modInfo = {
 	pointsName: "points",
 	discordName: "",
 	discordLink: "",
-	initialStartPoints: new ExpantaNum (10), // Used for hard resets and new players
+	initialStartPoints: new OmegaNum (10), // Used for hard resets and new players
 	
 	offlineLimit: 1,  // In hours
 }
 
 // Set your version in num and name
 let VERSION = {
-	num: "2.5.11.1",
-	name: "Dreams Really Do Come True",
+	num: "2.6",
+	name: "Fixed Reality",
 }
 
 let changelog = `<h1>Changelog:</h1><br>
@@ -26,7 +26,7 @@ let winText = `Congratulations! You have reached the end and beaten this game, b
 var doNotCallTheseFunctionsEveryTick = ["doReset", "buy", "onPurchase", "blowUpEverything"]
 
 function getStartPoints(){
-    return new ExpantaNum(modInfo.initialStartPoints)
+    return new OmegaNum(modInfo.initialStartPoints)
 }
 
 // Determines if it should show points/sec
@@ -37,9 +37,9 @@ function canGenPoints(){
 // Calculate points/sec!
 function getPointGen() {
 	if(!canGenPoints())
-		return new ExpantaNum(0)
+		return new OmegaNum(0)
 
-	let gain = new ExpantaNum(1)
+	let gain = new OmegaNum(1)
 	if (hasUpgrade("c", 12)) gain = gain.times(upgradeEffect("c", 12))
 	return gain
 }
@@ -47,7 +47,7 @@ function getPointGen() {
 // You can add non-layer related variables that should to into "player" and be saved here, along with default values
 function addedPlayerData() { return {
 	weather: "Yes",
-	happiness: new ExpantaNum(72),
+	happiness: new OmegaNum(72),
 }}
 
 // Display extra things at the top of the page
@@ -59,7 +59,7 @@ var displayThings = [
 
 // Determines when the game "ends"
 function isEndgame() {
-	return player.points.gte(new ExpantaNum("e280000000"))
+	return player.points.gte(new OmegaNum("e280000000"))
 }
 
 

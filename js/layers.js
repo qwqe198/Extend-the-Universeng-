@@ -1,583 +1,244 @@
-function getEffect(id) {
+function getEffect(id){
     return layers.b.clickables[id].effect()
 }
-function getTimeSpeed() {
-    var ts = n(1)
-    ts = ts.mul(getEffect(12))
-ts = ts.mul(getEffect(22))
-    if (hasUpgrade("p", 12)) ts = ts.mul(1.1)
-if (hasUpgrade("p", 14)&&player.b.points.lt(60)) ts = ts.mul(upgradeEffect("p", 14))
-if (hasUpgrade("p", 14)&&player.b.points.gte(60)) ts = ts.div(upgradeEffect("p", 14))
-if (hasUpgrade("p", 14)) ts = ts.div(upgradeEffect("p", 14))
-if(inChallenge("p",11))ts=ts.mul(player.b.points.add(1).pow(0.5))
-if (hasUpgrade("p", 22)&&(player.b.m.max(player.b.am).gte(1e8))) ts = ts.div(1.25)
-    return ts
+function getTimeSpeed(){
+    var timespeed = n(1)
+    timespeed = timespeed.mul(getEffect(12))
+    return timespeed
 }
- function start() {
-        var s = new ExpantaNum(10000)
-      if(hasUpgrade("p",13))s=s.mul(upgradeEffect("p", 13))
-        return s
-    }
 addLayer("b", { //这是代码中的节点代码 例如player.p可以调用该层级的数据 尽量使用顺手的字母什么的 不建议数字开头
     symbol: "B", // 这是节点上显示的字母
     position: 0, // 节点顺序
-  
- 
-    startData() {
-        return {
-            unlocked: true, //是否开始就解锁
-            points: new ExpantaNum(0),
-            producing: null,
-            //row 1
-            m: new ExpantaNum(10000),
-            e: new ExpantaNum(0),
-            am: new ExpantaNum(10000),
-            s: new ExpantaNum(1),
-            a: new ExpantaNum(0),
-            t: new ExpantaNum(0),
-start: new ExpantaNum(0),
-        }
-    },
-
-    color: "#4B4C83",
+    startData() { return {
+        unlocked: true, //是否开始就解锁
+		points: new ExpantaNum(0),
+		producing: null,
+        //row 1
+		m: new ExpantaNum(10000),
+		e: new ExpantaNum(0),
+		am: new ExpantaNum(10000),
+        s: new ExpantaNum(1),
+        a: new ExpantaNum(0),
+        t: new ExpantaNum(0),
+    }},
+    color: "lime",
     resource: "平衡点", // 重置获得的资源名称
     type: "none", // normal: cost to gain currency depends on amount gained. static: cost depends on how much you already have
     row: 1, // Row the layer is in on the tree (0 is the first row)  QwQ:1也可以当第一排
-    layerShown() { return true },
-    effectDescription() { return `(基于物质/反物质的最小值)<br>宇宙开始扩张...请勿让正反物质小于1,否则会导致宇宙塌缩.<br>标注c的资源要点击才能生成，且只能同时生成一个<br>第一次到60平衡点会解锁新层级<br>如果在低于60平衡点坍缩，则固定+0.25混沌点` },
-    clickables: {
-        11: {
-            display() {
-                return `c开始生成物质(^1.03/s)...
+    layerShown(){return true},
+    effectDescription(){return `宇宙开始扩张...<br>心情不好做的 自闭了就关了吧<br>请勿让任何物体膨胀至无限大,否则会导致宇宙塌缩.`},
+    clickables:{
+        11:{
+            display(){
+            return `开始生成物质(^1.03/s)...
             物质数:${format(player.b.m)}
             物质每秒/${format(layers.b.clickables[11].decay()[1])}
             `},
-            onClick() {
+            onClick(){
                 player.b.producing = this.id
             },
-            decay() {
-                var root = n(80)
-                if (hasUpgrade("p", 11)) root = n(100)
+            decay(){
                 var am = player.b.am
-             am = am.div(getEffect(14))
-                am = powsoftcap(am, n(1e6), 0.5)
-                var decay = am.root(root)
-if(hasUpgrade("p", 24)&&player.b.m.lt(player.b.am))decay=decay.div(upgradeEffect("p", 24))
-if(hasUpgrade("p", 32)&&player.b.m.gte(player.b.am))decay=decay.mul(upgradeEffect("p", 32))
-if(inChallenge("p",12)&&player.b.m.gte(player.b.am))decay=decay.pow(0.5)
-if(inChallenge("p",12)&&player.b.m.lt(player.b.am))decay=decay.pow(2)
-                return ["div", decay]
+                am = am.div(getEffect(14))
+                am = powsoftcap(am,n(1e6),0.5)
+                var decay = am.root(80)
+                return ["div",decay]
             },
-            gain() {
+            gain(){
                 var gain = n(1.03)
-                return ["pow", gain]
+                return ["pow",gain]
             },
-            thing: "m",
-            canClick: true,
-            style() { return { "background-color": player.b.producing == this.id ? "gold" : "lime" } },
-            unlocked() { return true },
+            thing:"m",
+            canClick:true,
+            style(){return {"background-color":player.b.producing==this.id?"gold":"lime"}},
+            unlocked(){return true},
         },
-        12: {
-            display() {
-                return `开始发生能量(+${format(this.passive()[1])}/s)...
+        12:{
+            display(){
+            return `开始发生能量(+${format(this.passive()[1])}/s)...
             能量:${format(player.b[this.thing])}
             能量每秒/${format(layers.b.clickables[this.id].decay()[1])}
             时间变快${format(this.effect())}倍
             基于物质/反物质的最小值
             `},
-            onClick() {
+            onClick(){
                 player.b.producing = this.id
             },
-            decay() {
+            decay(){
                 var decay = player.b.e.root(16)
-                return ["div", decay]
+                return ["div",decay]
             },
-            passive() {
+            passive(){
                 var gain = player.b.m.min(player.b.am).div(100000)
-if (hasUpgrade("p", 21)) gain = gain.pow(upgradeEffect("p", 21))
-if (hasUpgrade("p", 31))gain = gain.root(getEffect(21))
-                return ["add", gain]
+                return ["add",gain]
             },
-            effect() {
+            effect(){
                 var effect = player.b.e.add(1).log10().add(1)
                 return effect
             },
-            thing: "e",
-            canClick: false,
-            unlocked() { return player.b.points.gte(5) },
+            thing:"e",
+            canClick:false,
+            unlocked(){return player.b.points.gte(5)},
             /* style(){
                 return {"background-color":player.b.producing==this.id?"gold":"lime"}
             }, */
         },
-        13: {
-            display() {
-                return `c开始生成反物质(^1.03/s)...
+        13:{
+            display(){
+            return `开始生成反物质(^1.03/s)...
             反物质数:${format(player.b.am)}
             反物质每秒/${format(layers.b.clickables[13].decay()[1])}
             `},
-            onClick() {
+            onClick(){
                 player.b.producing = this.id
-            },
-            decay() {
-                var root = n(80)
-                if (hasUpgrade("p", 11)) root = n(100)
+            }, 
+            decay(){
                 var m = player.b.m
- m = m.div(getEffect(14))
-
-                m = powsoftcap(m, n(1e6), 0.5)
-                var decay = m.root(root)
-if(hasUpgrade("p", 24)&&player.b.am.lt(player.b.m))decay=decay.div(upgradeEffect("p", 24))
-if(hasUpgrade("p", 32)&&player.b.am.gte(player.b.m))decay=decay.mul(upgradeEffect("p", 32))
-if(inChallenge("p",12)&&player.b.m.gte(player.b.am))decay=decay.pow(2)
-if(inChallenge("p",12)&&player.b.m.lt(player.b.am))decay=decay.pow(0.5)
-                return ["div", decay]
+                m = powsoftcap(m,n(1e6),0.5)
+                m = m.div(getEffect(14))
+                var decay = m.root(80)
+                return ["div",decay]
             },
-            gain() {
+            gain(){
                 var gain = n(1.03)
-                return ["pow", gain]
+                return ["pow",gain]
             },
-            thing: "am",
-            canClick: true,
-            style() {
-                return { "background-color": player.b.producing == this.id ? "gold" : "lime" }
+            thing:"am",
+            canClick:true,
+            style(){
+                return {"background-color":player.b.producing==this.id?"gold":"lime"}
             },
-            unlocked() { return true },
+            unlocked(){return true},
         },
-        14: {
-            display() {
-                return `开始出现空间(x${format(this.passive()[1])}/s)...
+        14:{
+            display(){
+            return `开始出现空间(x${format(this.passive()[1])}/s)...
             空间:${format(player.b[this.thing])}
             空间每秒/${format(layers.b.clickables[this.id].decay()[1])}
             反物质/物质的衰减基于原来/${format(this.effect())}的数量
             基于反物质和物质的最大值
             `},
-            onClick() {
+            onClick(){
                 player.b.producing = this.id
             },
-            decay() {
+            decay(){
                 var decay = player.b.s.root(25)
-                return ["div", decay]
+                return ["div",decay]
             },
-            passive() {
+            passive(){
                 var gain = player.b.m.max(player.b.am).log10().pow(5).div(100000).add(1)
                 gain = gain.root(getEffect(21))
-
-                return ["mul", gain]
+                return ["mul",gain]
             },
-            effect() {
-                var eff = player.b.s.root(2)
-if(inChallenge("p",12))eff = eff.pow(0.5)
-                return eff
+            effect(){
+                var effect = player.b.s.root(2)
+                return effect
             },
-            thing: "s",
-            canClick: false,
-            unlocked() { return player.b.points.gte(15) },
+            thing:"s",
+            canClick:false,
+            unlocked(){return player.b.points.gte(15)},
             /* style(){
                 return {"background-color":player.b.producing==this.id?"gold":"lime"}
             }, */
         },
-        21: {
-            display() {
-                return `c开始出现陨石(+${format(this.gain()[1])}/s)...
+        21:{
+            display(){
+            return `开始出现陨石(+${format(this.gain()[1])}/s)...
             陨石:${format(player.b[this.thing])}
             陨石每秒/${format(layers.b.clickables[this.id].decay()[1])}
             空间产量开${format(this.effect())}次根
-            基于空间,物质/反物质的最小值
+            基于空间,物质
             `},
-            onClick() {
+            onClick(){
                 player.b.producing = this.id
             },
-            decay() {
+            decay(){
                 var decay = player.b.a.add(1).root(120)
-                return ["div", decay]
+                return ["div",decay]
             },
-            gain() {
-                var gain = player.b.m.min(player.b.am).log10().mul(player.b.s.log10().pow(1.6)).div(10)
-                return ["add", gain]
+            gain(){
+                var gain = player.b.m.log10().mul(player.b.s.log10().pow(1.6)).div(10)
+                return ["add",gain]
             },
-            effect() {
+            effect(){
                 var effect = player.b[this.thing].div(10).add(1).log10().div(2).add(1)
                 return effect
             },
-            thing: "a",
-            canClick: true,
-            unlocked() { return player.b.points.gte(35) },
+            thing:"a",
+            canClick:true,
+            unlocked(){return player.b.points.gte(35)},
             /* style(){
                 return {"background-color":player.b.producing==this.id?"gold":"lime"}
             }, */
         },
-        22: {
-            display() {
-                return `开始出现时间(+${format(this.passive()[1])}/s)...
+        22:{
+            display(){
+            return `开始出现时间(+${format(this.passive()[1])}/s)...
             时间:${format(player.b[this.thing])}
             时间速率*${format(this.effect())}
             `},
-            onClick() {
+            onClick(){
                 player.b.producing = this.id
             },
-            passive() {
+            passive(){
                 var gain = n(1)
-                return ["add", gain]
+                return ["add",gain]
             },
-            effect() {
+            effect(){
                 var effect = player.b.t.div(10).add(1).pow(0.2)
                 return effect
             },
-            thing: "t",
-            canClick: false,
-            unlocked() { return player.b.points.gte(60) },
+            thing:"t",
+            canClick:false,
+            unlocked(){return player.b.points.gte(60)},
             /* style(){
                 return {"background-color":player.b.producing==this.id?"gold":"lime"}
             }, */
         },
     },
- 
-    update(diff) {
-if (hasUpgrade("p", 13)&&player.b.start.lt(1)) {
-                        player.b.m = new ExpantaNum(start())
-player.b.am = new ExpantaNum(start())
-player.b.start=n(1)
-            }
-        if ((player.b.m.lt(1) || player.b.am.lt(1))&&player.b.points.lt(60)) {
+    update(diff){
+        if(player.b.m.isInfinite() || player.b.am.isInfinite() || player.b.m.isNaN() || player.b.m.isNaN()){
             layerDataReset(this.layer)
             player.points = n(0)
-player.p.points = player.p.points.add(0.25)
         }
- if ((player.b.m.lt(1) || player.b.am.lt(1))&&player.b.points.gte(60)) {
-            doReset("p")
-
-        }
-        if (!player.b.producing) return
+        if(!player.b.producing) return
         diff = getTimeSpeed().mul(diff)
         player.b.points = player.b.points.max(player.b.m.min(player.b.am).log10().sub(4).mul(10))
         let clickables = this.clickables
         let producing = clickables[player.b.producing]
-        if (producing.gain) {
+        if(producing.gain){
             let gain = producing.gain()
-            if (gain[0] == "add") player.b[producing.thing] = player.b[producing.thing][gain[0]](gain[1].mul(diff))
+            if(gain[0] == "add") player.b[producing.thing] = player.b[producing.thing][gain[0]](gain[1].mul(diff))
             else player.b[producing.thing] = player.b[producing.thing][gain[0]](gain[1].pow(diff))
         }
-        for (i in clickables) {
-            if (isNaN(Number(i))) break
+        for(i in clickables){
+            if(isNaN(Number(i))) break
             let clickable = clickables[i]
-            if (clickable.unlocked()) {
-                if (clickable.passive) {
+            if(clickable.unlocked()){
+                if(clickable.passive){
                     let passive = clickable.passive()
-                    if (passive[0] == "add") player.b[clickable.thing] = player.b[clickable.thing][passive[0]](passive[1].mul(diff))
+                    if(passive[0] == "add") player.b[clickable.thing] = player.b[clickable.thing][passive[0]](passive[1].mul(diff))
                     else player.b[clickable.thing] = player.b[clickable.thing][passive[0]](passive[1].pow(diff))
                 }
-                if (clickable.decay) {
+                if(clickable.decay){
                     let decay = clickable.decay()
-                    if (decay[0] == "add") player.b[clickable.thing] = player.b[clickable.thing][decay[0]](decay[1].mul(diff))
+                    if(decay[0] == "add") player.b[clickable.thing] = player.b[clickable.thing][decay[0]](decay[1].mul(diff))
                     else player.b[clickable.thing] = player.b[clickable.thing][decay[0]](decay[1].pow(diff))
                 }
             }
         }
-
+        
     }
 })
-addLayer("p", { //这是代码中的节点代码 例如player.p可以调用该层级的数据 尽量使用顺手的字母什么的 不建议数字开头
-    symbol: `P`, // 这是节点上显示的字母
-    position: 0, // 节点顺序
-    startData() {
-        return {
-            unlocked: true, //是否开始就解锁
-            points: new ExpantaNum(0),
-s: new ExpantaNum(0),
-        }
-    },
-sgain() { // 资源获取指数加成(与exponent相乘)
-        var gain = player.b.points.div(500).pow(2).sub(1).max(0)
-
-        return gain
-    },
-      update(diff) {
-
-                        if(hasUpgrade("p",35))player.p.s = player.p.s.add(layers.p.sgain().div(20))
 
 
-    },
-    requires() { return new ExpantaNum("60") },
-    color: "lime",
-    resource: "混沌点", // 重置获得的资源名称
-    type: "normal", // normal: cost to gain currency depends on amount gained. static: cost depends on how much you already have
-    passiveGeneration() {
+//save:
+/*
+eydXRvc2F2ZSI6dHJ1ZSwibXNEaXNwbGF5IjoiYWx3YXlzIiwidGhlbWUiOm51bGwsImhxVHJlZSI6ZmFsc2UsIm9mZmxpbmVQcm9kIjp0cnVlLCJoaWRlQ2hhbGxlbmdlcyI6ZmFsc2UsInNob3dTdG9yeSI6dHJ1ZSwiZm9yY2VPbmVUYWIiOmZhbHNlLCJvbGRTdHlsZSI6ZmFsc2V9N4IgLghgRiBcIHsAOYCWCB2BnAtJGANCBhAG4Aq0c4ATgKZ15VFoC2dcAjAGwCsAnAA5uAZgBMABkET+vIhgRoAZgE84wAL5FSdGlnQZyKpB3iANbUDGFqgAmACkCj+oG8MwIGRgTMVAAHKAqOUA3Tu8AHpoAxcoAhbjaAp3KATGmARtaWgE2KgIFeAJQg2rr6mNQSAHQSyeCo7AAKADYQKnTWXDK8mSKi/PUN/AAsEnIgANYMSADiCKgYAOZwShBFWHREABYQWAByELPDo+NESH0YYFjqIBA0NKVwANoSALpE+gMYXFogWACuUPhbsKAAxtODdEUIA0wwLxobiUsGAAMoQJR0Sj/ECEED9JQIKAIAAedGemiICIQf22dww31enQqsDANDuE3AilG212+zUsGOZ1uqEu1yIUHRYFpewOjIwdyKRWZFyusE4N3o4zA5Hypk4VRqdUa9RabURNFeUIQCCKaCQSzGlKgdxU0CK6PUNwUACV0SZXgBhTBKVA0ViGlYgV5FVBE82WgHnEwbADyGAAQqaAxidryGUzzqyxRKiHckAN9tZA4dmaxUBaQZgc8zgWAALIFrnFuACoVECDvVB0HTsDbPXNEd6jC2fDE3TM2K2regUKjwEA3ZBoTC4fB4gkIInlOBkiksalFHn0o6nJNs8U3Tkg7d8w514X7lOS9F0GVyyqyJUiFWq1pEDVa8g6vWoA2wEYjQ5aMoELYdiAQO0sAdZ0MFdd1PUpH0/XaGNwOgugw0jECwJeOMd0ZPcWQPVMQHTTMIGzDs8yrIsMBLIgy0rQswBrWALwbJsWzoNtNiOZluyFTCBkDTEQEHEkxKQUdoWoScuw+ETvl+ec8PxQliVXclKVYyAtzwukzyI0V2VhLlTwTC8RWTUypTvWV2EfapahfV81Q/BBNW1XV9UQ4CzVA0TrUg+06CdF03Q9ADliQ31/UC/tg0wsBwyjALcNAQyE2MmzDzTDMswYkB8xY4tqMYmYK1o1j6NrQUik4yZm1bZLyu9aYhL7cCJPA6SW1kicjxKDB2gXDSV1JbSNz0izd2skij3Mgz4yOKyr1s2970c8VFRc19mnfEBP2839/0Ar0TXSoL5BCjDwrgyK/O9OLUIS9CQxS7CrtjLK5vWvKyIKyiipK6t6LapjqrYjidi4lr234hSe2E67xJoIcgxAPqxxheTaAYXE1MXZcSTXHTN1mwj5uvDklsylb+Xq6mNulBz5V25UVXco7PK/H9fOioDYRw1HbVC+74Ki87YpQtDMYwrC0rl+mCMTYiacBiiqMR4qofBnXIdK2r2Pqxrmp41qdcE3sRMStGMakmTxxAPH/lAdSl00yb1yx9Y+OW1WmjETJBE4fgAHZuG4ThBDEbgJHD5mAekhBrDuV5+iGeBOE4XIopVs9BHDiQmiLkQahaePeGrkQk9I0wC4TSRy+LqOZFL/gxH4Womjrm4IHz/CzzEQRxAkEuE94bhshHiQxET/7SJ+hnDjEcveCaTvY4kTgRCaXhw9D7g++mmkA6Mk+zJPc/ssvuytvlTfMm4Ufx7f9/DuO78fL/J7LuV4KUEYIRQQoLL0yF4oZRADnOSRBOBiFgdAkQiDOBNEQWIXOE4iBiAQYNJKisRbL1VjlBa+UtYgz1kVQ2YNTAw0bE1bivE2rWxRnbHqmNsYDRdiwSmasTIAwgLwkh15ARAA
 
 
-
-        return 0
-    },
-
-    exponent: 0.25,
-    baseAmount() { return player.b.points },//基础资源数量
-    baseResource: "平衡点",//基础资源名称
-    gainMult() { // 资源获取数量倍率
-        mult = new ExpantaNum(1)
-if(hasUpgrade("p",34))mult=mult.mul(upgradeEffect("p", 34))
-mult=mult.mul(challengeEffect("p", 11).mul(0.1).add(1).pow(0.25))
-if(inChallenge("p",11))mult=n(0)
-if(inChallenge("p",12))mult=n(0)
-        return mult
-    },
-    gainExp() { // 资源获取指数加成(与exponent相乘)
-        var exp = new ExpantaNum(1)
-
-        return exp
-    },
-    layerShown() { return player.b.points.gte(60) || player.p.points.gte(1) || hasUpgrade("p", 11) },
-    row: 2, // Row the layer is in on the tree (0 is the first row)  QwQ:1也可以当第一排
-challenges: {
-        11: {
-            name: '变数1 时间膨胀',
-            challengeDescription: '时间速率基于平衡点增加.你基于变数中取得的最高平衡点获得加成.',
-            rewardDescription() { return `当前最高${format(this.rewardEffect())},混沌点x${format(((this.rewardEffect() *0.1) + 1)**0.25)}` },
-            rewardEffect() {
-                var eff = n(player.p.challenges[11])
-
-                return eff
-            },
-    goal: 0,
-               
-            onExit() {
-                player.p.challenges[11] = player.b.points.max(challengeEffect("p", 11)).max(0)
+eydXRvc2F2ZSI6dHJ1ZSwibXNEaXNwbGF5IjoiYWx3YXlzIiwidGhlbWUiOm51bGwsImhxVHJlZSI6ZmFsc2UsIm9mZmxpbmVQcm9kIjp0cnVlLCJoaWRlQ2hhbGxlbmdlcyI6ZmFsc2UsInNob3dTdG9yeSI6dHJ1ZSwiZm9yY2VPbmVUYWIiOmZhbHNlLCJvbGRTdHlsZSI6ZmFsc2V9N4IgLghgRiBcIHsAOYCWCB2BnAtJGANCBhAG4Aq0c4ATgKZ15VFoC2dcAjAGwCsAnAA5uAZl6CATAAYA7ABYiGBGgBmATzjAAvkVJ0aWdBnJqkHeIA1tQMYWqACYAKQKP6gbwzAgZGBMxUAAcoCo5QDdOnwAPTQBi5QBC3O0BTuUAmNMAja2tAJsVAQK8AShBdfUNMaikAOilU8FR2AAUAGwg1OlsuOU5+bIkROX5mlsFaogBrBiQAcQRUDABzOBUIEqw6IgALCCwAOQg5kbGJoiR+jDAsTRAIGhpyuABtKQBdIkNBjC4dECwAVyh8bdhQAGMZoboShEGmGFeWluZSwYAAyhAVHRKACQIQQAMVAgoAgAB50F7aIiIhD/Hb3DA/N5dKqwMA0e6TcDKMY7PYHDSwE7nO6oK43IhQDFgOn7Q5MjD3EolFmXa6wTi3egTMDkQrmTg1OoNJotZptfhEJE0N7QhAIEpoJDLcZUqD3NTQEoYzS3JQAJQxZjeAGFMCpUDRWCbViA3iVUMSrTbARczJsAPIYABCFuDmN2fMZzIubPFkqI9yQgwOthDRxZrFQ1tBmHzLJBYAAssXuWW4ILhUQIB9UHQ9OxNi8C0QPmNrV9Mbcc3ZbWt6BQqPAQLdkGhMLh8PjCQhiZU4OTKSwaSVeQzjmdU+yJbcuaC9/yjo2RUf01KMXRZfLqrV6o01er2iBtbryPrDagxqwKMpqcnGUAlmOxAII6WDOm6GAel6PpUv6gYdPGUFwXQkYxuBkGvIm+5MoerLHhmIBZjmEB5t2ha1qWGDlkQlY1iWYD1rA17Nq27Z0J2WzHCyfbCjhgwhliIAjqSklIBOMLUDOvafOJPx/EuhEEkSJIbhSVIcZAu6EfSl6kWKHJwtyF7JteopphZ0qPnK7Avsq74fhqWoIDqeoGkaKFgZaEESXaMFOnQrrup63rASsqEBkGwVDmGOFgFGsZBQRoAmcmZn2SembZrmzEgEW7FlnRLGzNWDEcUxDZCiUPFTG2HapZVfozKJg5QdJUFye2CnTqeZQYB0y7aeuZJ6duhnWQednkaeVnGUmxy2beDkPk+LkSkqb6qmqnnft5v7/v5sWgXC+EhYoYXYZFiHRQFfoJRhSVYeGaV4ZlElEaZi13oV1G0UJRBlXWTEdaxtWcdxuy8W1XZg51/ZibdUk0KOoYgANk6wkptAMHimkrmupKbvpO7zSRgMWWePKrcRV6NXTBUgI5O0KvtKofkIX4/r5AFASBvrmr9yXQbB8FRchl2+mhiVZbc2G4RlmFMwDm3s1RxUdRDjElTD5X1VxjXNa1/HtSjIkDuJkt9TjeNDSAhMAqAWmrjp01brjGyCZryZiNkvASLw8icCIMi8CIUj8FIcjcGzFFyQgtj3G8AzDPAnCcPkMXZWtTKR9wMhSBIkgSNkioyIIMicOXye3OYhfM3IghyNk3AJ2IUiyM0MgyPwSfaxREAF/9yaR1Ipe1FXgiyB3Hft03Fw00cMhd3wbTiKqEgSE0cir9Sc2Bwto/LeeZ+0xfRCc855hhyI2SD9Iffv1InDR9wXk+X+fmAReuLDWkkHThUekhGKot4roRASAXOikiCcAkIg+BIhUGKlQRIPO04iD70UirL66UboJhyufMiQNKJFRoiVA2dUjbVTYpDcw8MWwtT4gJDqtt0YOyxjJW4zspyuxYOvPKS1myiKbkCIAA
 
 
-            },
-            completionLimit: "1eeeee10",
-            canComplete() { return true },
-            resource() { return player.b.points },
-            unlocked() { return true},
-        },
-12: {
-            name: '变数2 上位压制',
-            challengeDescription: '物质和反物质中较大者每秒衰减^0.5,较小者^2.空间效果^0.5 你基于变数中取得的最高平衡点获得加成.',
-            rewardDescription() { return `当前最高${format(this.rewardEffect())},升级24，32效果^${format(((this.rewardEffect() *0.075) + 1)**0.1)}` },
-            rewardEffect() {
-                var eff = n(player.p.challenges[12])
-
-                return eff
-            },
-    goal: 0,
-               
-            onExit() {
-                player.p.challenges[12] = player.b.points.max(challengeEffect("p", 12)).max(0)
-
-
-            },
-            completionLimit: "1eeeee10",
-            canComplete() { return true },
-            resource() { return player.b.points },
-            unlocked() { return hasUpgrade("p", 33)},
-        },
-    },
-buyables: {
-        11: {
-            cost(x = getBuyableAmount(this.layer, this.id)) {
-                var c = n(100).mul(n(2).pow(x))
-
-                return c
-            },
-title() {
-                return "1"
-            },
-            display() { return `升级13,14,23效果<br />^${format(buyableEffect(this.layer, this.id), 2)}.(下一级: ${format(this.effect(getBuyableAmount(this.layer, this.id).add(1)))})<br />费用:${format(this.cost(getBuyableAmount(this.layer, this.id)))}平衡点<br>等级:${formatWhole(getBuyableAmount(this.layer, this.id))}` },
-            canAfford() { return player.b.points.gte(this.cost()) },
-            buy() {
-                player.b.points = player.b.points.sub(this.cost())
-                setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
-            },
-        
-            effect(x = getBuyableAmount(this.layer, this.id)) {
-                var eff = n(1.1).pow(x)
-
-                return eff
-            },
-            unlocked() { return true  },
-        },
-    },
-    upgrades: {
-        11: {
-            description: "削弱物质与反物质互相湮灭除数(开80次根->开100次根).",
-            cost() { return new ExpantaNum(1) },
-            unlocked() { return true },
-
-        },
-        12: {
-            description: "时间速率x1.1.",
-            cost() { return new ExpantaNum(1) },
-            unlocked() { return hasUpgrade("p", 11) },
-
-        },
-        13: {
-            description: "在混沌点重置后，初始正反物质基于混沌点增加.",
-            cost() { return new ExpantaNum(1) },
-            effect() {
-                var eff = player.p.points.add(2)
-eff=eff.pow(buyableEffect("p",11))
-                return eff
-            },
-            effectDisplay() { return `x ${format(this.effect())}` },
-            unlocked() { return hasUpgrade("p", 12) },
-
-        },
- 14: {
-            description: "时间速率基于平衡点变化.",
-effect() {
-                var eff = player.b.points.add(10).log10().pow(0.5)
-eff=eff.pow(buyableEffect("p",11))
-                return eff
-            },
-            effectDisplay() { return player.b.points.gte(60)?`/ ${format(this.effect())}`:`x ${format(this.effect())}` },
-            cost() { return new ExpantaNum(1) },
-            unlocked() { return hasUpgrade("p", 13) },
-
-        },
-15: {
-            description: "解锁变数.",
-            cost() { return new ExpantaNum(2) },
-            unlocked() { return hasUpgrade("p", 14) },
-
-        },
-21: {
-            description: "每个升级使能量获取^0.975.",
-effect() {
-                var eff = n(0.975).pow(player.p.upgrades.length)
-
-                return eff
-            },
-            effectDisplay() { return `^ ${format(this.effect())}` },
-            cost() { return new ExpantaNum(3) },
-            unlocked() { return hasUpgrade("p", 15) },
-
-        },
-22: {
-            description: "如果物质/反物质的最大值超过1e8，时间速率/1.25.",
-            cost() { return new ExpantaNum(4) },
-            unlocked() { return hasUpgrade("p", 21) },
-
-        },
-23: {
-            description: "时间速率基于物质和反物质的最大值减少（从1e10开始）.",
-effect() {
-                var eff = player.b.m.max(player.b.am).log10().log10().max(1)
-eff=eff.pow(buyableEffect("p",11))
-                return eff
-
-            },
-            effectDisplay() { return `/ ${format(this.effect())}` },
-            cost() { return new ExpantaNum(5) },
-            unlocked() { return hasUpgrade("p", 22) },
-
-        },
-24: {
-            description: "物质和反物质较大者给予较小者每秒衰减减少.",
-effect() {
-                var eff = player.b.m.max(player.b.am).log10().log10().add(1).pow(0.05)
-eff=eff.pow(challengeEffect("p", 12).mul(0.075).add(1).pow(0.1))
-                return eff
-            },
-            effectDisplay() { return `/ ${format(this.effect())}` },
-            cost() { return new ExpantaNum(6) },
-            unlocked() { return hasUpgrade("p", 23) },
-
-        },
-25: {
-            description: "解锁一个购买项(下一个升级要买3次购买项1).",
-            cost() { return new ExpantaNum(7) },
-            unlocked() { return hasUpgrade("p", 24) },
-
-        },
-31: {
-            description: "来点有意思的 陨石对能量获取生效.",
-
-            cost() { return new ExpantaNum(8) },
-            unlocked() { return getBuyableAmount(this.layer,11).gte(3) },
-
-        },
-32: {
-            description: "来点更有意思的 物质和反物质较小者给予较大者每秒衰减增加.",
-effect() {
-                var eff = player.b.m.min(player.b.am).log10().log10().add(1).max(1).pow(0.05)
-eff=eff.pow(challengeEffect("p", 12).mul(0.075).add(1).pow(0.1))
-                return eff
-            },
-            effectDisplay() { return `x ${format(this.effect())}` },
-            cost() { return new ExpantaNum(9) },
-            unlocked() { return hasUpgrade("p", 31) },
-
-        },
-33: {
-            description: "解锁第二个变数.",
-            cost() { return new ExpantaNum(10) },
-            unlocked() { return hasUpgrade("p", 32) },
-
-        },
-34: {
-            description: "混沌点获取基于时间速率增加.",
-effect() {
-                var eff = getTimeSpeed().pow(0.1)
-
-                return eff
-
-            },
-            effectDisplay() { return `x ${format(this.effect())}` },
-            cost() { return new ExpantaNum(11) },
-            unlocked() { return hasUpgrade("p", 33) },
-
-        },
-35: {
-            description: "解锁一个新资源.",
-
-            cost() { return new ExpantaNum(15) },
-            unlocked() { return hasUpgrade("p", 34) },
-
-        },
-    },
- tabFormat: {
-        upg: {
-            buttonStyle() { return { 'color': 'lightblue' } },
-            content:
-                ["main-display",
-
-                    "prestige-button",
-                    "resource-display",
-["display-text", function () {
- if(hasUpgrade("p",35))return `你有${format(player.p.s)}熵(+${format(layers.p.sgain())}/s),效果制作中（需要500平衡点）`
-                                }],
-                    "upgrades",
-
-                ],
-        },
-buy: {
-            buttonStyle() { return { 'color': 'lightblue' } },
-unlocked() { return hasUpgrade("p", 25) },
-            content:
-                ["main-display",
-
-                    "prestige-button",
-                    "resource-display",
-                    "buyables",
-
-                ],
-        },
-
-
-        chl: {
-            buttonStyle() { return { 'color': 'lightblue' } },
-            unlocked() { return hasUpgrade("p", 15) },
-            content:
-                ["main-display",
-
-                    "prestige-button",
-                    "resource-display",
- ["display-text", function () {
- return "在变数内无法获得混沌点"
-                                }],
-                    "challenges",
-
-                ],
-        },
-    },
-
-
-})
+eydXRvc2F2ZSI6dHJ1ZSwibXNEaXNwbGF5IjoiYWx3YXlzIiwidGhlbWUiOm51bGwsImhxVHJlZSI6ZmFsc2UsIm9mZmxpbmVQcm9kIjp0cnVlLCJoaWRlQ2hhbGxlbmdlcyI6ZmFsc2UsInNob3dTdG9yeSI6dHJ1ZSwiZm9yY2VPbmVUYWIiOmZhbHNlLCJvbGRTdHlsZSI6ZmFsc2V9N4IgLghgRiBcIHsAOYCWCB2BnAtJGANCBhAG4Aq0cxmApiEWgLb2wCMAbAKwCcAHBwAsXLgHZRggAxEMCNADMAnnGABfIqVoAnLOgzlFSViEAa2oGMLVABMAFIFH9QN4ZgQMjAmYqAAOUBUcoBunV4APTQDFygCFuVoCncoBMaYBG1uaATYqAgV4AlAwgmjp61JIAdJKJzLQACgA2EIq0lnBSPOlcfDyStXWSAEw8AMzNRADWtLRIAOIIqBgA5nDyEPlYtEQAFhBYAHIQcyNjE0RI/RhgWCogEFpaRXAA2uWV1fV1Ta0AukS6gxhwbOogWACuUPjbsKAAxjNDWj5BCDPBUH6qF6FLBgADKEHktEoMHghBAA3kCCgCAAHrRvmoiBiEGCUaA3hhgb9OqVYGAtG9JuA5GMdnsDspYEdJLdXqgHk8XlB8WA2ftDlyMG98vlefdHuwXlp8bQwORUCwypIKlUahdGi02iBMVpfkiEAh8mgkMtxkyoG9FNB8viVC9ZAAlfFGX4AYUw8lQWiYttWIF++VQ1OdrohdyMmwA8hgAEKOmME3bizncuX8hXPIhvJCDA6WWNHXlMVAumF0b6VojQsAAWRrIrocClMqIEH+qFomhYmwbvP+YxdgIJL1LVjda2VFHBIBAL2QaEwuHwOwpVJpcHpjMYLPyYo5xx5d3zgqIwphZ4lR27sqvAsVRGVEzVGtYp11+oNVoiBNM1yAtK1UBtWBRjtW90ygWt5xoL0sB9f0MEDYNQyZCMo3aDMkNQ2gk1TeDEJ+LNzy5S8+TfQsQGLUsIHLUciGrWswHrY5eWbNsOM7WBn17ftB1oYctm4ohxxlYjBljQkQFnWkFKQRdkWoVcpIBOTgVBbcKN3BBqRKA8GSZTjIFPCj2UfGj5RvEA71Fazs2OZ88zopUVW/TVYD/c59SuI0QPNS1rWwuCnQQ+T3QQFC0IDIMQ2glYcMjaNouneNiLAZM0yi8jQBsnM7Ovd8GJLMsKyrds6wwaqm1mVtas4+qu2lfJhKmAchxy1jwxmGSpyQpSkNUwd1PgTTHMKDB2h3SkjP3OkzOPSyHxKjyCyFEUNrcjqtocz9VXVXz/L1C4guAhBTVCiCoJgsMHQKmKZDi71aD9RKsJS2Dw3S/DMsIhNctIl7M2Ki9DvKxiqv69iO3q/reJagShN2ETepHSSBonWTXsUrQ5zjEBxqXFEVxeekulJBa9xMlaj2ZdaXKo3NX2229dtZx93I5o7vNO39tTOC76iu40btA8Dwt+p6yIJz0Pq+jCkoi/68IIkmiJI/KtaK1zqOh+jYeYhqQARurzZR/i2sEjqup6sS+px6TJzkrLCeJlS1OXaayQYxbjNpQ8mXWAYJJ5nNBDYdJmhqQQOFEPgJAaPg+EEBoOGNl5VIQSw3l+AZhngNhmkSZKDbZ5omh4LOMgEUQGmaNg+DYZuc6IVgq8fMvmnSTgU5EBoJGaZOR873ZK8ox9mkEZPmg4NhJC4TI+C4SQOA4ZpJ4hw2jm4XhY74Bo2C4U+qnP0RJ4gPauR4Ves9bqoM+qduxEn5ye82/nyos1ko5Q1/vRJyd92a0U5iAY6PlWD8EqInHgiCkGIL4NdW6YEwqQXVs9fWsV4qfXQphZKj00qayBhRNgbANJEHbtQkAZc6FsEEHQ0+LCGgaReDrUGetyHfyARAhypsWI40tq1a2TU+KI1YOjPs3VRLiX6m7fGntRokzJpNSmqggA=
+*/

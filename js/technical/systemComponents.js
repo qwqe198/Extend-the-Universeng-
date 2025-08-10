@@ -64,7 +64,7 @@ var systemComponents = {
 	
 	'layer-tab': {
 		props: ['layer', 'back', 'spacing', 'embedded'],
-		template: `<div v-bind:style="[tmp[layer].style ? tmp[layer].style : {}, (tmp[layer].tabFormat && !Array.isArray(tmp[layer].tabFormat)) ? tmp[layer].tabFormat[player.subtabs[layer].mainTabs].style : {}]">
+		template: `<div v-bind:style="[tmp[layer].style ? tmp[layer].style : {}, (tmp[layer].tabFormat && !Array.isArray(tmp[layer].tabFormat)) ? tmp[layer].tabFormat[player.subtabs[layer].mainTabs].style : {}]" class="noBackground">
 		<div v-if="back"><button v-bind:class="back == 'big' ? 'other-back' : 'back'" v-on:click="goBack(layer)">←</button></div>
 		<div v-if="!tmp[layer].tabFormat">
 			<div v-if="spacing" v-bind:style="{'height': spacing}" :key="this.$vnode.key + '-spacing'"></div>
@@ -99,7 +99,8 @@ var systemComponents = {
 		</div></div>
 			`
 	},
-'overlay-head': {
+
+	'overlay-head': {
 		template: `			
 		<div class="overlayThing" style="padding-bottom:7px; width: 90%; z-index: 1000; position: relative">
 		<span v-if="player.devSpeed && player.devSpeed != 1" class="overlayThing">
@@ -127,24 +128,20 @@ var systemComponents = {
         <h3>{{VERSION.withName}}</h3>
         <span v-if="modInfo.author">
             <br>
-            Made by {{modInfo.author}}	
+            作者: {{modInfo.author}}	
         </span>
         <br>
-        The Modding Tree <a v-bind:href="'https://github.com/Acamaeda/The-Modding-Tree/blob/master/changelog.md'" target="_blank" class="link" v-bind:style = "{'font-size': '14px', 'display': 'inline'}" >{{TMT_VERSION.tmtNum}}</a> by Acamaeda
+        模组树 <a v-bind:href="'https://github.com/Acamaeda/The-Modding-Tree/blob/master/changelog.md'" target="_blank" class="link" v-bind:style = "{'font-size': '14px', 'display': 'inline'}" >{{TMT_VERSION.tmtNum}}</a> 制作者为Acamaeda
         <br>
-        The Prestige Tree made by Jacorb and Aarex
-        <br>
-        Original idea by papyrus (on discord)
+        声望树作者 Jacorb 和 Aarex
 		<br><br>
-		<div class="link" onclick="showTab('changelog-tab')">Changelog</div><br>
+		<div class="link" onclick="showTab('changelog-tab')">模组树更新记录(本树更新记录请点右上版本号)</div><br>
         <span v-if="modInfo.discordLink"><a class="link" v-bind:href="modInfo.discordLink" target="_blank">{{modInfo.discordName}}</a><br></span>
-        <a class="link" href="https://gityx.com" target="_blank" v-bind:style="modInfo.discordLink ? {'font-size': '16px'} : {}">Git游戏</a><br>
-        <a class="link" href="https://g8hh.github.io" target="_blank" v-bind:style="modInfo.discordLink ? {'font-size': '16px'} : {}">锅巴汉化</a><br>
-        <a class="link" href="https://discord.gg/F3xveHV" target="_blank" v-bind:style="modInfo.discordLink ? {'font-size': '16px'} : {}">The Modding Tree Discord</a><br>
-        <a class="link" href="http://discord.gg/wwQfgPa" target="_blank" v-bind:style="{'font-size': '16px'}">Main Prestige Tree server</a><br>
+        <a class="link" href="https://discord.gg/F3xveHV" target="_blank" v-bind:style="modInfo.discordLink ? {'font-size': '16px'} : {}">模组树Discord</a><br>
+        <a class="link" href="http://discord.gg/wwQfgPa" target="_blank" v-bind:style="{'font-size': '16px'}">声望树Discord</a><br>
 		<br><br>
-        Time Played: {{ formatTime(player.timePlayed) }}<br><br>
-        <h3>Hotkeys</h3><br>
+        游玩时长: {{ formatTime(player.timePlayed) }}<br><br>
+        <h3>快捷键</h3><br>
         <span v-for="key in hotkeys" v-if="player[key.layer].unlocked && tmp[key.layer].hotkeys[key.id].unlocked"><br>{{key.description}}</span></div>
     `
     },
@@ -154,22 +151,22 @@ var systemComponents = {
         <table>
             <tr>
                 <td><button class="opt" onclick="save()">存档</button></td>
-                <td><button class="opt" onclick="toggleOpt('autosave')">自动存档: {{ player.autosave?"已开启":"已关闭" }}</button></td>
+                <td><button class="opt" onclick="toggleOpt('autosave')">自动存档: {{ options.autosave?"已开启":"已关闭" }}</button></td>
                 <td><button class="opt" onclick="hardReset()">硬重置(删除存档)</button></td>
             </tr>
             <tr>
                 <td><button class="opt" onclick="exportSave()">导出存档(复制到黏贴板)</button></td>
                 <td><button class="opt" onclick="importSave()">导入存档</button></td>
-                <td><button class="opt" onclick="toggleOpt('offlineProd')">离线进度: {{ player.offlineProd?"已开启":"已关闭" }}</button></td>
+                <td><button class="opt" onclick="toggleOpt('offlineProd')">离线进度: {{ options.offlineProd?"已开启":"已关闭" }}</button></td>
             </tr>
             <tr>
                 <td><button class="opt" onclick="switchTheme()">背景主题: {{ getThemeName() }}</button></td>
-                <td><button class="opt" onclick="adjustMSDisp()">显示里程碑: {{ MS_DISPLAYS[MS_SETTINGS.indexOf(player.msDisplay)]}}</button></td>
-                <td><button class="opt" onclick="toggleOpt('hqTree')">高质量树: {{ player.hqTree?"已开启":"已关闭" }}</button></td>
+                <td><button class="opt" onclick="adjustMSDisp()">显示里程碑: {{ MS_DISPLAYS[MS_SETTINGS.indexOf(options.msDisplay)]}}</button></td>
+                <td><button class="opt" onclick="toggleOpt('hqTree')">高质量树: {{ options.hqTree?"已开启":"已关闭" }}</button></td>
             </tr>
             <tr>
-                <td><button class="opt" onclick="toggleOpt('hideChallenges')">已完成挑战: {{ player.hideChallenges?"隐藏":"显示" }}</button></td>
-                <td><button class="opt" onclick="toggleOpt('forceOneTab'); needsCanvasUpdate = true">节点内容占据整个屏幕: {{ player.forceOneTab?"永远这样":"自动调节" }}</button></td>
+                <td><button class="opt" onclick="toggleOpt('hideChallenges')">已完成挑战: {{ options.hideChallenges?"隐藏":"显示" }}</button></td>
+                <td><button class="opt" onclick="toggleOpt('forceOneTab'); needsCanvasUpdate = true">节点内容占据整个屏幕: {{ options.forceOneTab?"永远这样":"自动调节" }}</button></td>
 			</tr> 
         </table>`
     },
@@ -188,10 +185,10 @@ var systemComponents = {
 	},
 
 	'node-mark': {
-		props: ['layer', 'data'],
+		props: {'layer': {}, data: {}, offset: {default: 0}, scale: {default: 1}},
 		template: `<div v-if='data'>
-			<div v-if='data === true' class='star' style='position: absolute; left: -10px; top: -10px;'></div>
-			<img v-else class='mark' style='position: absolute; left: -25px; top: -10px;' v-bind:src="data"></div>
+			<div v-if='data === true' class='star' v-bind:style='{position: "absolute", left: (offset-10) + "px", top: (offset-10) + "px", transform: "scale( " + scale||1 + ", " + scale||1 + ")"}'></div>
+			<img v-else class='mark' v-bind:style='{position: "absolute", left: (offset-22) + "px", top: (offset-15) + "px", transform: "scale( " + scale||1 + ", " + scale||1 + ")"}' v-bind:src="data"></div>
 		</div>
 		`
 	},
@@ -209,5 +206,11 @@ var systemComponents = {
 		</div>
 		`
 	},
+
+	'bg': {
+		props: ['layer'],
+		template: `<div class ="bg" v-bind:style="[tmp[layer].style ? tmp[layer].style : {}, (tmp[layer].tabFormat && !Array.isArray(tmp[layer].tabFormat)) ? tmp[layer].tabFormat[player.subtabs[layer].mainTabs].style : {}]"></div>
+		`
+	}
 
 }
