@@ -1,7 +1,7 @@
-﻿let modInfo = {
-	name: "拓展宇宙",
-	id: "Extend-the-Universe",
-	author: "QwQe308",
+let modInfo = {
+	name: "拓展宇宙ng+",
+	id: "Extend-the-Universeng",
+	author: "QwQe308和22222",
 	pointsName: "",
 	discordName: "",
 	discordLink: "",
@@ -12,11 +12,23 @@
 
 // Set your version in num and name
 let VERSION = {
-	num: "0.1",
+	num: "0.16",
 	name: "",
 }
 
 let changelog = `<h1>更新记录:</h1><br>
+<h3>v0.16</h3><br>
+		- 添加两个混沌点升级,一个新资源,削弱升级价格.<br>
+<h3>v0.15</h3><br>
+		- 添加三个混沌点升级和一个变数,以及一个购买项.<br>
+<h3>v0.14</h3><br>
+		- 添加两个混沌点升级.<br>
+<h3>v0.13</h3><br>
+		- 添加三个混沌点升级和一个变数,优化描述.<br>
+<h3>v0.12</h3><br>
+		- 添加三个混沌点升级和教程.<br>
+<h3>v0.11</h3><br>
+		- 添加前两个混沌点升级.<br>
 	<h3>v0.1</h3><br>
 		- 添加~60平衡点的内容.*难度在不断加高,警惕所有膨胀!<br>`
 
@@ -48,6 +60,7 @@ function addedPlayerData() { return {
 
 // Display extra things at the top of the page
 var displayThings = [
+function () { return `时间速率:${format(getTimeSpeed())}x` },
 ]
 
 // Determines when the game "ends"

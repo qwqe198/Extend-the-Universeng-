@@ -14,7 +14,7 @@ Upgrades are stored in the following format:
 upgrades: {
     11: {
         description: "Blah",
-        cost: new OmegaNum(100),
+        cost: new ExpantaNum(100),
         etc
     },
     etc
@@ -35,7 +35,7 @@ Individual upgrades can have these features:
 
 - fullDisplay(): **OVERRIDE**. Overrides the other displays and descriptions, and lets you set the full text for the upgrade. Can use basic HTML.
 
-- cost: A OmegaNum for the cost of the upgrade. By default, upgrades cost the main prestige currency for the layer.
+- cost: A ExpantaNum for the cost of the upgrade. By default, upgrades cost the main prestige currency for the layer.
 
 - unlocked(): **optional**. A function returning a bool to determine if the upgrade is visible or not. Default is unlocked.
 
@@ -47,7 +47,7 @@ Individual upgrades can have these features:
 
 - id: **assigned automagically**. It's the "key" which the upgrade was stored under, for convenient access. The upgrade in the example's id is 11.
 
-By default, upgrades use the main prestige currency for the layer. You can include these to change them (but it needs to be a OmegaNum):
+By default, upgrades use the main prestige currency for the layer. You can include these to change them (but it needs to be a ExpantaNum):
 
 - currencyDisplayName: **optional**. The name to display for the currency for the upgrade.
 
@@ -62,5 +62,3 @@ If you want to do something more complicated like upgrades that cost two currenc
 - canAfford(): **OVERRIDE**, a function determining if you are able to buy the upgrade
 
 - pay(): **OVERRIDE**, a function that reduces your currencies when you buy the upgrade
-
-- branches: **optional**, This is primarially useful for upgrade trees. An array of upgrade ids. A line will appear from this upgrade to all of the upgrades in the list. Alternatively, an entry in the array can be a 2-element array consisting of the upgrade id and a color value. The color value can either be a string with a hex color code, or a number from 1-3 (theme-affected colors).

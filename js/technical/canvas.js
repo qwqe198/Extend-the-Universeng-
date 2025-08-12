@@ -7,6 +7,7 @@ function retrieveCanvasData() {
 	let treeCanv = document.getElementById("treeCanvas")
 	let treeTab = document.getElementById("treeTab")
 	if (treeCanv===undefined||treeCanv===null) return false;
+	if (treeTab===undefined||treeTab===null) return false;
 	canvas = treeCanv;
 	ctx = canvas.getContext("2d");
 	return true;
@@ -45,21 +46,13 @@ function drawTree() {
 					drawTreeBranch(layer, tmp[layer].branches[branch])
 				}
 		}
-		for(id in layers[layer].upgrades) {
-			if (tmp[layer].upgrades[id].branches) {
-				for (branch in tmp[layer].upgrades[id].branches)
-				{
-					drawTreeBranch(id, tmp[layer].upgrades[id].branches[branch], "upgrade-" + layer + "-")
-				}
-
-			}
-		}
 	}
 }
 
-function drawTreeBranch(num1, data, prefix) { // taken from Antimatter Dimensions & adjusted slightly
+function drawTreeBranch(num1, data) { // taken from Antimatter Dimensions & adjusted slightly
 	let num2 = data
 	let color_id = 1
+
 	if (Array.isArray(data)){
 		num2 = data[0]
 		color_id = data[1]
@@ -67,10 +60,7 @@ function drawTreeBranch(num1, data, prefix) { // taken from Antimatter Dimension
 
 	if(typeof(color_id) == "number")
 		color_id = colors_theme[color_id]
-	if (prefix) {
-		num1 = prefix + num1
-		num2 = prefix + num2
-	}
+
 	if (document.getElementById(num1) == null || document.getElementById(num2) == null)
 		return
 

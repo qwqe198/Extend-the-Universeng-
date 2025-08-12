@@ -42,7 +42,7 @@ addNode("h", {
     tooltipLocked() {return "Restore your points to " + player.c.otherThingy},
     row: "side",
     canClick() {return player.points.lt(player.c.otherThingy)},
-    onClick() {player.points = new OmegaNum(player.c.otherThingy)}
+    onClick() {player.points = new ExpantaNum(player.c.otherThingy)}
 }, 
 )
 
@@ -50,6 +50,5 @@ addLayer("tree-tab", {
     tabFormat: [["tree", function() {return (layoutInfo.treeLayout ? layoutInfo.treeLayout : TREE_LAYERS)}]],
     previousTab: "",
     leftTab: true,
-                style() {return  {'background-color': '#222222'}},
 
 })
