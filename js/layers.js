@@ -8,7 +8,7 @@ ts = ts.mul(getEffect(22))
     if (hasUpgrade("p", 12)) ts = ts.mul(1.1)
 if (hasUpgrade("p", 14)&&player.b.points.lt(60)) ts = ts.mul(upgradeEffect("p", 14))
 if (hasUpgrade("p", 14)&&player.b.points.gte(60)) ts = ts.div(upgradeEffect("p", 14))
-if (hasUpgrade("p", 14)) ts = ts.div(upgradeEffect("p", 14))
+
 if(inChallenge("p",11))ts=ts.mul(player.b.points.add(1).pow(0.5))
 if (hasUpgrade("p", 22)&&(player.b.m.max(player.b.am).gte(1e8))) ts = ts.div(1.25)
     return ts
@@ -23,7 +23,7 @@ addLayer("b", { //这是代码中的节点代码 例如player.p可以调用该�
     position: 0, // 节点顺序
   bgain() { // 资源获取指数加成(与exponent相乘)
         var gain = player.b.m.min(player.b.am).log10().sub(4).mul(10)
-if(gain.gte(1000))gain=gain.pow(2/3).mul(10)
+
         return gain
     },
  
@@ -65,7 +65,8 @@ return `(基于物质/反物质的最小值)<br>宇宙开始扩张...请勿让�
                 var root = n(80)
                 if (hasUpgrade("p", 11)) root = n(100)
                 var am = player.b.am
-             am = am.div(getEffect(14))
+                if(!player.b.m.max(player.b.am).gte(1e100))am = am.div(getEffect(14))
+if(player.b.m.max(player.b.am).gte(1e100))am = am.mul(getEffect(14))
                 
                 var decay = am.root(root)
 if(hasUpgrade("p", 24)&&player.b.m.lt(player.b.am))decay=decay.div(upgradeEffect("p", 24))
@@ -128,7 +129,8 @@ if (hasUpgrade("p", 31))gain = gain.root(getEffect(21))
                 var root = n(80)
                 if (hasUpgrade("p", 11)) root = n(100)
                 var m = player.b.m
- m = m.div(getEffect(14))
+if(!player.b.m.max(player.b.am).gte(1e100))m = m.div(getEffect(14))
+if(player.b.m.max(player.b.am).gte(1e100))m = m.mul(getEffect(14))
 
                 
                 var decay = m.root(root)
@@ -223,6 +225,7 @@ if(inChallenge("p",12))eff = eff.pow(0.5)
             },
             passive() {
                 var gain = n(1)
+if(hasUpgrade("p",43))mult=mult.mul(getTimeSpeed())
                 return ["add", gain]
             },
             effect() {
@@ -294,7 +297,7 @@ s: new ExpantaNum(0),
     },
 sgain() { // 资源获取指数加成(与exponent相乘)
         var gain = player.b.points.div(500).pow(2).sub(1).max(0)
-
+if(hasUpgrade("p",43))gain=gain.mul(upgradeEffect("p", 43))
         return gain
     },
       update(diff) {
@@ -320,6 +323,7 @@ sgain() { // 资源获取指数加成(与exponent相乘)
     gainMult() { // 资源获取数量倍率
         mult = new ExpantaNum(1)
 if(hasUpgrade("p",34))mult=mult.mul(upgradeEffect("p", 34))
+if(hasUpgrade("p",44))mult=mult.mul(upgradeEffect("p", 44))
 mult=mult.mul(challengeEffect("p", 11).mul(0.1).add(1).pow(0.25))
 if(inChallenge("p",11))mult=n(0)
 if(inChallenge("p",12))mult=n(0)
@@ -420,6 +424,7 @@ title() {
             effect() {
                 var eff = player.p.points.add(2)
 eff=eff.pow(buyableEffect("p",11))
+if(hasUpgrade("p",41))eff=eff.pow(challengeEffect("p", 12).mul(0.075).add(1).pow(0.1))
                 return eff
             },
             effectDisplay() { return `x ${format(this.effect())}` },
@@ -448,7 +453,7 @@ eff=eff.pow(buyableEffect("p",11))
             description: "每个升级使能量获取^0.975.",
 effect() {
                 var eff = n(0.975).pow(player.p.upgrades.length)
-
+if (hasUpgrade("p", 42)) eff = eff.div(upgradeEffect("p", 42))
                 return eff
             },
             effectDisplay() { return `^ ${format(this.effect())}` },
@@ -538,6 +543,72 @@ effect() {
             unlocked() { return hasUpgrade("p", 34) },
 
         },
+41: {
+            description: "变数12效果对升级13生效.",
+
+            cost() { return new ExpantaNum(100) },
+            unlocked() { return hasUpgrade("p", 35) },
+currencyDisplayName: "熵",
+            currencyInternalName: "s",
+            currencyLayer: "p"
+        },
+42: {
+            description: "基于平衡点平衡升级21效果.",
+
+            cost() { return new ExpantaNum(200) },
+            unlocked() { return hasUpgrade("p", 41) },
+effect() {
+                var eff = player.b.points.add(1).pow(0.075).sub(0.5)
+
+                return eff
+
+            },
+            effectDisplay() { return `/ ${format(this.effect())}` },
+currencyDisplayName: "熵",
+            currencyInternalName: "s",
+            currencyLayer: "p"
+        },
+43: {
+            description: "陨石加成熵获取,但是时间速率加成时间.",
+
+            cost() { return new ExpantaNum(300) },
+            unlocked() { return hasUpgrade("p", 42) },
+effect() {
+                var eff = player.b.a.div(10).add(1).log10().div(2).add(1)
+
+                return eff
+
+            },
+            effectDisplay() { return `x ${format(this.effect())}` },
+currencyDisplayName: "熵",
+            currencyInternalName: "s",
+            currencyLayer: "p"
+        },
+44: {
+            description: "宇宙存在时间加成混沌点获取.",
+
+            cost() { return new ExpantaNum(1000) },
+            unlocked() { return hasUpgrade("p", 43) },
+effect() {
+                var eff = player.points.pow(0.05)
+
+                return eff
+
+            },
+            effectDisplay() { return `x ${format(this.effect())}` },
+currencyDisplayName: "熵",
+            currencyInternalName: "s",
+            currencyLayer: "p"
+        },
+45: {
+            description: "解释第3个变数(制作中).",
+
+            cost() { return new ExpantaNum(1500) },
+            unlocked() { return hasUpgrade("p", 44) },
+currencyDisplayName: "熵",
+            currencyInternalName: "s",
+            currencyLayer: "p"
+        },
     },
  tabFormat: {
         upg: {
@@ -548,7 +619,7 @@ effect() {
                     "prestige-button",
                     "resource-display",
 ["display-text", function () {
- if(hasUpgrade("p",35))return `你有${format(player.p.s)}熵(+${format(layers.p.sgain())}/s),效果制作中（需要500平衡点）`
+ if(hasUpgrade("p",35))return `你有${format(player.p.s)}熵(+${format(layers.p.sgain())}/s)（需要500平衡点）`
                                 }],
                     "upgrades",
 

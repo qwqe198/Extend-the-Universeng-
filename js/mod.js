@@ -12,11 +12,13 @@ let modInfo = {
 
 // Set your version in num and name
 let VERSION = {
-	num: "0.16",
+	num: "0.17",
 	name: "",
 }
 
 let changelog = `<h1>更新记录:</h1><br>
+<h3>v0.17</h3><br>
+		- 添加五个混沌点升级.<br>
 <h3>v0.16</h3><br>
 		- 添加两个混沌点升级,一个新资源,削弱升级价格.<br>
 <h3>v0.15</h3><br>
@@ -50,7 +52,7 @@ function canGenPoints(){
 // Calculate points/sec!
 function getPointGen() {
 	if(!canGenPoints()) return new ExpantaNum(0)
-	let gain = new ExpantaNum(1)
+	let gain = getTimeSpeed()
 	return gain
 }
 
@@ -61,6 +63,8 @@ function addedPlayerData() { return {
 // Display extra things at the top of the page
 var displayThings = [
 function () { return `时间速率:${format(getTimeSpeed())}x` },
+function () { return player.b.m.max(player.b.am).gte(1e100)?`因为物质与反物质的最大值超过1e100，触发空间坍缩，空间效果反转`:"" },
+
 ]
 
 // Determines when the game "ends"
